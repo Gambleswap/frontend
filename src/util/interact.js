@@ -9,7 +9,7 @@ const GMBContractABI = require("../GMBToken-abi.json");
 const GMBContractAddress = "0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F";
 
 const GamblingContractABI = require("../GamblingToken-abi.json");
-const GamblingContractAddress = "0xe6b98F104c1BEf218F3893ADab4160Dc73Eb8367";
+const GamblingContractAddress = "0x712516e61C8B383dF4A63CFe83d7701Bce54B03e";
 
 
 export const GMBTokenContract = new web3.eth.Contract(
@@ -28,16 +28,16 @@ export const loadTokenName = async () => {
 };
 
 export const loadCoveragePerGMB = async () => {
-	return await GamblingContract.methods.getCurrentRound().call();
+	return await GamblingContract.methods.getCurrentRoundCoveragePerGMB().call();
 };
 
 export const loadRoundNum = async () => {
-	return await GamblingContract.methods.getCurrentRoundCoveragePerGMB().call();
+	return await GamblingContract.methods.getCurrentRound().call();
 };
 
 export const loadTokenAccountBalance = async (account) => {
 	const balance = await GMBTokenContract.methods.balanceOf(account).call();
-	return +balance / 10 ** 18;
+	return balance;
 };
 
 export const connectWallet = async () => {
@@ -137,6 +137,50 @@ export const participate = async (fromAddress, betValue, gmbToken) => {
 		to: GamblingContractAddress, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
 		data: GamblingContract.methods.participate(gmbToken, betValue).encodeABI(),
+	};
+
+	//sign the transaction
+	try {
+		const txHash = await window.ethereum.request({
+			method: "eth_sendTransaction",
+			params: [transactionParameters],
+		});
+		return {
+			status: (
+				<span>
+					✅{" "}
+					<a target="_blank" href={`https://rinkeby.etherscan.io/tx/${txHash}`}>
+						View the status of your transaction on Etherscan!
+					</a>
+				</span>
+			),
+		};
+	} catch (error) {
+		return {
+			status: "😥 " + error.message,
+		};
+	}
+};
+
+export const claim = async (fromAddress, gameNumber) => {
+	//input error handling
+	if (!window.ethereum || fromAddress === null) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	if (gameNumber.trim() === "") {
+		return {
+			status: "❌ Your message cannot be an empty string.",
+		};
+	}
+
+	const transactionParameters = {
+		to: GamblingContractAddress, // Required except during contract publications.
+		from: fromAddress, // must match user's active address.
+		data: GamblingContract.methods.claim(gameNumber).encodeABI(),
 	};
 
 	//sign the transaction

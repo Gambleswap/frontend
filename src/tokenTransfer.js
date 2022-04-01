@@ -9,6 +9,7 @@ import {
 	getCurrentWalletConnected,
 	loadCoveragePerGMB,
 	loadRoundNum,
+	claim,
 } from "./util/interact.js";
 
 import Ubclogo from "./ubc-logo.png";
@@ -19,6 +20,7 @@ const TokenTransfer = () => {
 	const [status, setStatus] = useState("");
 	const [betValue, setBetValue] = useState("");
 	const [GMBToken, setGMBToken] = useState("");
+	const [gameNumber, setGameNumber] = useState("");
 
 	const [tokenName, setTokenName] = useState("No connection to the network."); //default tokenName
 	const [tokenBalance, settokenBalance] = useState(
@@ -86,6 +88,12 @@ const TokenTransfer = () => {
 		setStatus(res.status);
 	}
 
+	const handleClaim = async () => {
+		setBetValue(gameNumber);
+		const res = await claim(walletAddress, gameNumber);
+		setStatus(res.status);
+	}
+
 	const connectWalletPressed = async () => {
 		const walletResponse = await connectWallet();
 		setStatus(walletResponse.status);
@@ -108,64 +116,34 @@ const TokenTransfer = () => {
 		<h4 style={{ paddingTop: "50px" }}>Round Number: {roundNum}</h4>
 		<h4 style={{ paddingTop: "50px" }}>CoveragePerGMB: {coveragePerGMB}</h4>
 		<hr></hr>
-			<label>Bet Value:
-				<input 
-				type="text" 
-				value={betValue}
-				onChange={(e) => setBetValue(e.target.value)}
-				/>
-			</label>
-			<label>GMB Token:
-				<input 
-				type="text" 
-				value={GMBToken}
-				onChange={(e) => setGMBToken(e.target.value)}
-				/>
-			</label>
-      		<input type="submit" value="participate" onClick={handleParticipation}/>
+		<label>Bet Value:
+			<input 
+			type="text" 
+			value={betValue}
+			onChange={(e) => setBetValue(e.target.value)}
+			/>
+		</label>
+		<label>GMB Token:
+			<input 
+			type="text" 
+			value={GMBToken}
+			onChange={(e) => setGMBToken(e.target.value)}
+			/>
+		</label>
+		<input type="submit" value="participate" onClick={handleParticipation}/>
+		<hr></hr>
+		<label>Game Number:
+			<input 
+			type="text" 
+			value={gameNumber}
+			onChange={(e) => setGameNumber(e.target.value)}
+			/>
+		</label>
+		<input type="submit" value="claim" onClick={handleClaim}/>
 		<p id="status">{status}</p>
 
 		</div>
 	)
-
-	//the UI of our component
-	// return (
-	// 	<div id="container">
-	// 		<img id="logo" src={Ubclogo}></img>
-	// 		<button id="walletButton" onClick={connectWalletPressed}>
-	// 			{walletAddress.length > 0 ? (
-	// 				"Connected: " +
-	// 				String(walletAddress).substring(0, 6) +
-	// 				"..." +
-	// 				String(walletAddress).substring(38)
-	// 			) : (
-	// 				<span>Connect Wallet</span>
-	// 			)}
-	// 		</button>
-
-			// <h2 style={{ paddingTop: "50px" }}>Token Nmae:</h2>
-			// <p>{tokenName}</p>
-
-			// <h2 style={{ paddingTop: "50px" }}>Balance:</h2>
-			// <p>{tokenBalance}</p>
-
-	// 		<h2 style={{ paddingTop: "18px" }}>Transfer 1 UBC Token To:</h2>
-
-	// 		<div>
-	// 			<input
-	// 				type="text"
-	// 				placeholder="transfer token to:"
-	// 				onChange={(e) => setToAddress(e.target.value)}
-	// 				value={toAddress}
-	// 			/>
-	// 			<p id="status">{status}</p>
-
-	// 			<button id="publish" onClick={onUpdatePressed}>
-	// 				Transfer
-	// 			</button>
-	// 		</div>
-	// 	</div>
-	// );
 };
 
 export default TokenTransfer;
