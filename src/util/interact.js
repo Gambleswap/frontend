@@ -180,7 +180,7 @@ export const claim = async (fromAddress, gameNumber) => {
 	const transactionParameters = {
 		to: GamblingContractAddress, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
-		data: GamblingContract.methods.claim(gameNumber).encodeABI(),
+		data: GamblingContract.methods.claimPrize(gameNumber).encodeABI(),
 	};
 
 	//sign the transaction
