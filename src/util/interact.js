@@ -5,10 +5,10 @@ const Web3 = require("web3")
 // const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
 const web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"))
 
-const GMBContractABI = require("../GMBToken-abi.json");
+const GMBContractABI = require("../abis/GMBToken-abi.json");
 const GMBContractAddress = "0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F";
 
-const GamblingContractABI = require("../GamblingToken-abi.json");
+const GamblingContractABI = require("../abis/Gambling-abi.json");
 const GamblingContractAddress = "0x712516e61C8B383dF4A63CFe83d7701Bce54B03e";
 
 
