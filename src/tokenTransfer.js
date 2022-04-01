@@ -1,4 +1,5 @@
 import React from "react";
+import { BigNumber, ethers } from "ethers";
 import { useEffect, useState } from "react";
 import {
 	GMBTokenContract,
@@ -9,6 +10,10 @@ import {
 	getCurrentWalletConnected,
 	loadCoveragePerGMB,
 	loadRoundNum,
+	GamblingContract,
+	GamblingContractAddress,
+	GMBContractAddress,
+	loadAllowanceAmount
 } from "./util/interact.js";
 
 import Ubclogo from "./ubc-logo.png";
@@ -16,6 +21,7 @@ import Ubclogo from "./ubc-logo.png";
 const TokenTransfer = () => {
 	//state variables
 	const [walletAddress, setWallet] = useState("");
+	const [approved, setApproved] = useState("");
 	const [status, setStatus] = useState("");
 	const [betValue, setBetValue] = useState("");
 	const [GMBToken, setGMBToken] = useState("");
@@ -51,9 +57,11 @@ const TokenTransfer = () => {
 			setWallet(address);
 			setStatus(status);
 			addWalletListener();
+			const approved = await loadAllowanceAmount(address, GMBContractAddress, GamblingContractAddress);
+			setApproved(approved)
 		}
 		fetchData();
-	}, [walletAddress, tokenBalance]);
+	}, [walletAddress, tokenBalance, approved]);
 
 	function addWalletListener() {
 		if (window.ethereum) {
@@ -86,6 +94,11 @@ const TokenTransfer = () => {
 		setStatus(res.status);
 	}
 
+	const checkAllowedValue = async (allowance) => {
+		return allowance !== "" && BigNumber.from(allowance) > 99999999999999999999999
+
+	}
+
 	const connectWalletPressed = async () => {
 		const walletResponse = await connectWallet();
 		setStatus(walletResponse.status);
@@ -94,36 +107,38 @@ const TokenTransfer = () => {
 
 	return (
 		<div id="container">
-		{walletAddress.length > 0 ? (
-			"Connected: " +
-			String(walletAddress).substring(0, 6) +
-			"..." +
-			String(walletAddress).substring(38)
-		) : (
-	 		<button id="walletButton" onClick={connectWalletPressed}>
-			<span>Connect Wallet</span>
-	 		</button>
-		)}
-		<h4 style={{ paddingTop: "50px" }}>GMBToken Balance: {tokenBalance}</h4>
-		<h4 style={{ paddingTop: "50px" }}>Round Number: {roundNum}</h4>
-		<h4 style={{ paddingTop: "50px" }}>CoveragePerGMB: {coveragePerGMB}</h4>
-		<hr></hr>
-			<label>Bet Value:
-				<input 
-				type="text" 
-				value={betValue}
-				onChange={(e) => setBetValue(e.target.value)}
-				/>
-			</label>
-			<label>GMB Token:
-				<input 
-				type="text" 
-				value={GMBToken}
-				onChange={(e) => setGMBToken(e.target.value)}
-				/>
-			</label>
-      		<input type="submit" value="participate" onClick={handleParticipation}/>
-		<p id="status">{status}</p>
+			{walletAddress.length > 0 ? (
+				"Connected: " +
+				String(walletAddress).substring(0, 6) +
+				"..." +
+				String(walletAddress).substring(38)
+			) : (
+				<button id="walletButton" onClick={connectWalletPressed}>
+				<span>Connect Wallet</span>
+				</button>
+			)}
+			<h4 style={{ paddingTop: "50px" }}>GMBToken Balance: {tokenBalance}</h4>
+			<h4 style={{ paddingTop: "50px" }}>Round Number: {roundNum}</h4>
+			<h4 style={{ paddingTop: "50px" }}>CoveragePerGMB: {coveragePerGMB}</h4>
+			<hr></hr>
+				<label>Bet Value:
+					<input 
+					type="text" 
+					value={betValue}
+					onChange={(e) => setBetValue(e.target.value)}
+					/>
+				</label>
+				<label>GMB Token:
+					<input 
+					type="text" 
+					value={GMBToken}
+					onChange={(e) => setGMBToken(e.target.value)}
+					/>
+				</label>
+				{
+					<input type="submit" value={checkAllowedValue(approved)? "participate":"Allow"} onClick={handleParticipation}/>
+				}
+			<p id="status">{status}</p>
 
 		</div>
 	)

@@ -1,0 +1,352 @@
+[
+	{
+	"inputs": [
+		{
+		"internalType": "address",
+		"name": "GMBContractAddr",
+		"type": "address"
+		}
+	],
+	"stateMutability": "nonpayable",
+	"type": "constructor"
+	},
+	{
+	"inputs": [],
+	"name": "JackpotBurnPortion",
+	"outputs": [
+		{
+		"internalType": "uint256",
+		"name": "",
+		"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [],
+	"name": "QualificationThreshold",
+	"outputs": [
+		{
+		"internalType": "uint256",
+		"name": "",
+		"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [],
+	"name": "admin",
+	"outputs": [
+		{
+		"internalType": "address",
+		"name": "",
+		"type": "address"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [
+		{
+		"internalType": "uint256",
+		"name": "i",
+		"type": "uint256"
+		}
+	],
+	"name": "burning_game",
+	"outputs": [
+		{
+		"internalType": "bool",
+		"name": "",
+		"type": "bool"
+		}
+	],
+	"stateMutability": "pure",
+	"type": "function"
+	},
+	{
+	"inputs": [
+		{
+		"internalType": "address",
+		"name": "user",
+		"type": "address"
+		}
+	],
+	"name": "checkLPToken",
+	"outputs": [
+		{
+		"internalType": "address",
+		"name": "",
+		"type": "address"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [
+		{
+		"internalType": "uint256",
+		"name": "gameNumber",
+		"type": "uint256"
+		}
+	],
+	"name": "claimLP",
+	"outputs": [],
+	"stateMutability": "nonpayable",
+	"type": "function"
+	},
+	{
+	"inputs": [
+		{
+		"internalType": "uint256",
+		"name": "round",
+		"type": "uint256"
+		}
+	],
+	"name": "claimPrize",
+	"outputs": [],
+	"stateMutability": "nonpayable",
+	"type": "function"
+	},
+	{
+	"inputs": [
+		{
+		"internalType": "uint256",
+		"name": "betValue",
+		"type": "uint256"
+		},
+		{
+		"internalType": "uint256",
+		"name": "winnerInterval",
+		"type": "uint256"
+		},
+		{
+		"internalType": "uint256",
+		"name": "randomNumber",
+		"type": "uint256"
+		},
+		{
+		"internalType": "uint256",
+		"name": "_maxRandomNumber",
+		"type": "uint256"
+		}
+	],
+	"name": "correctGuess",
+	"outputs": [
+		{
+		"internalType": "bool",
+		"name": "",
+		"type": "bool"
+		}
+	],
+	"stateMutability": "pure",
+	"type": "function"
+	},
+	{
+	"inputs": [],
+	"name": "currentRound",
+	"outputs": [
+		{
+		"internalType": "uint256",
+		"name": "",
+		"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [
+		{
+		"internalType": "uint256",
+		"name": "_rand",
+		"type": "uint256"
+		}
+	],
+	"name": "emergencyEnd",
+	"outputs": [],
+	"stateMutability": "nonpayable",
+	"type": "function"
+	},
+	{
+	"inputs": [],
+	"name": "endGame",
+	"outputs": [],
+	"stateMutability": "nonpayable",
+	"type": "function"
+	},
+	{
+	"inputs": [],
+	"name": "gameDuration",
+	"outputs": [
+		{
+		"internalType": "uint256",
+		"name": "",
+		"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [],
+	"name": "getCurrentRound",
+	"outputs": [
+		{
+		"internalType": "uint256",
+		"name": "",
+		"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [],
+	"name": "getCurrentRoundCoveragePerGMB",
+	"outputs": [
+		{
+		"internalType": "uint256",
+		"name": "",
+		"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [
+		{
+		"internalType": "uint256",
+		"name": "roundNumber",
+		"type": "uint256"
+		}
+	],
+	"name": "getJackpotValue",
+	"outputs": [
+		{
+		"internalType": "uint256",
+		"name": "",
+		"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [
+		{
+		"internalType": "uint256",
+		"name": "amount",
+		"type": "uint256"
+		},
+		{
+		"internalType": "uint256",
+		"name": "coverage",
+		"type": "uint256"
+		}
+	],
+	"name": "getUserInterval",
+	"outputs": [
+		{
+		"internalType": "uint256",
+		"name": "userInterval",
+		"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [],
+	"name": "gmbTokenContract",
+	"outputs": [
+		{
+		"internalType": "address",
+		"name": "",
+		"type": "address"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [],
+	"name": "initialInterval",
+	"outputs": [
+		{
+		"internalType": "uint256",
+		"name": "",
+		"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [
+		{
+		"internalType": "uint256",
+		"name": "index",
+		"type": "uint256"
+		},
+		{
+		"internalType": "address",
+		"name": "_addr",
+		"type": "address"
+		}
+	],
+	"name": "isWinner",
+	"outputs": [
+		{
+		"internalType": "bool",
+		"name": "",
+		"type": "bool"
+		},
+		{
+		"internalType": "uint256",
+		"name": "",
+		"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [],
+	"name": "maxRandomNumber",
+	"outputs": [
+		{
+		"internalType": "uint256",
+		"name": "",
+		"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+	},
+	{
+	"inputs": [
+		{
+		"internalType": "uint256",
+		"name": "gmbToken",
+		"type": "uint256"
+		},
+		{
+		"internalType": "uint256",
+		"name": "betValue",
+		"type": "uint256"
+		}
+	],
+	"name": "participate",
+	"outputs": [],
+	"stateMutability": "nonpayable",
+	"type": "function"
+	}
+]
+  
