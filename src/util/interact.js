@@ -5,13 +5,11 @@ const Web3 = require("web3")
 // const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
 const web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"))
 
-const ERC20ABI = require("../abis/ERC20-abi.json");
+const GMBContractABI = require("../GMBToken-abi.json");
+const GMBContractAddress = "0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F";
 
-const GMBContractABI = require("../abis/GMBToken-abi.json");
-export const GMBContractAddress = "0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F";
-
-const GamblingContractABI = require("../abis/Gambling-abi.json");
-export const GamblingContractAddress = "0x712516e61C8B383dF4A63CFe83d7701Bce54B03e";
+const GamblingContractABI = require("../GamblingToken-abi.json");
+const GamblingContractAddress = "0x712516e61C8B383dF4A63CFe83d7701Bce54B03e";
 
 
 export const GMBTokenContract = new web3.eth.Contract(
@@ -30,16 +28,16 @@ export const loadTokenName = async () => {
 };
 
 export const loadCoveragePerGMB = async () => {
-	return await GamblingContract.methods.getCurrentRound().call();
+	return await GamblingContract.methods.getCurrentRoundCoveragePerGMB().call();
 };
 
 export const loadRoundNum = async () => {
-	return await GamblingContract.methods.getCurrentRoundCoveragePerGMB().call();
+	return await GamblingContract.methods.getCurrentRound().call();
 };
 
 export const loadTokenAccountBalance = async (account) => {
 	const balance = await GMBTokenContract.methods.balanceOf(account).call();
-	return +balance / 10 ** 18;
+	return balance;
 };
 
 export const connectWallet = async () => {
@@ -163,10 +161,8 @@ export const participate = async (fromAddress, betValue, gmbToken) => {
 		};
 	}
 };
-<<<<<<< Updated upstream
-=======
 
-export const loadAllowanceAmount = async (fromAddress, contractAddress, spenderAddress) => {
+export const claim = async (fromAddress, gameNumber) => {
 	//input error handling
 	if (!window.ethereum || fromAddress === null) {
 		return {
@@ -175,61 +171,37 @@ export const loadAllowanceAmount = async (fromAddress, contractAddress, spenderA
 		};
 	}
 
-	const contract = new web3.eth.Contract(
-		ERC20ABI,
-		contractAddress
-	);
+	if (gameNumber.trim() === "") {
+		return {
+			status: "❌ Your message cannot be an empty string.",
+		};
+	}
 
-	return await contract.methods.allowance(fromAddress, spenderAddress).call();
+	const transactionParameters = {
+		to: GamblingContractAddress, // Required except during contract publications.
+		from: fromAddress, // must match user's active address.
+		data: GamblingContract.methods.claim(gameNumber).encodeABI(),
+	};
+
+	//sign the transaction
+	try {
+		const txHash = await window.ethereum.request({
+			method: "eth_sendTransaction",
+			params: [transactionParameters],
+		});
+		return {
+			status: (
+				<span>
+					✅{" "}
+					<a target="_blank" href={`https://rinkeby.etherscan.io/tx/${txHash}`}>
+						View the status of your transaction on Etherscan!
+					</a>
+				</span>
+			),
+		};
+	} catch (error) {
+		return {
+			status: "😥 " + error.message,
+		};
+	}
 };
-
-// export const transferToken = async (fromAddress, toAddress) => {
-// 	let value = (10 ** 18).toFixed(0);
-// 	console.log(value);
-// 	//input error handling
-// 	if (!window.ethereum || fromAddress === null) {
-// 		return {
-// 			status:
-// 				"💡 Connect your Metamask wallet to update the message on the blockchain.",
-// 		};
-// 	}
-
-// 	if (toAddress.trim() === "") {
-// 		return {
-// 			status: "❌ Your message cannot be an empty string.",
-// 		};
-// 	}
-
-// 	// //set up transaction parameters
-// 	const transactionParameters = {
-// 		to: GMBContractAddress, // Required except during contract publications.
-// 		from: fromAddress, // must match user's active address.
-// 		data: GMBTokenContract.methods.transfer(toAddress, value).encodeABI(),
-// 	};
-
-// 	//sign the transaction
-// 	try {
-// 		const txHash = await window.ethereum.request({
-// 			method: "eth_sendTransaction",
-// 			params: [transactionParameters],
-// 		});
-// 		return {
-// 			status: (
-// 				<span>
-// 					✅{" "}
-// 					<a target="_blank" href={`https://rinkeby.etherscan.io/tx/${txHash}`}>
-// 						View the status of your transaction on Etherscan!
-// 					</a>
-// 					<br />
-// 					ℹ️ Once the transaction is verified by the network, the token balance
-// 					will be updated automatically.
-// 				</span>
-// 			),
-// 		};
-// 	} catch (error) {
-// 		return {
-// 			status: "😥 " + error.message,
-// 		};
-// 	}
-// };
->>>>>>> Stashed changes

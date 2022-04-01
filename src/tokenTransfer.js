@@ -1,5 +1,4 @@
 import React from "react";
-import { BigNumber, ethers } from "ethers";
 import { useEffect, useState } from "react";
 import {
 	GMBTokenContract,
@@ -10,10 +9,7 @@ import {
 	getCurrentWalletConnected,
 	loadCoveragePerGMB,
 	loadRoundNum,
-	GamblingContract,
-	GamblingContractAddress,
-	GMBContractAddress,
-	loadAllowanceAmount
+	claim,
 } from "./util/interact.js";
 
 import Ubclogo from "./ubc-logo.png";
@@ -21,10 +17,10 @@ import Ubclogo from "./ubc-logo.png";
 const TokenTransfer = () => {
 	//state variables
 	const [walletAddress, setWallet] = useState("");
-	const [approved, setApproved] = useState("");
 	const [status, setStatus] = useState("");
 	const [betValue, setBetValue] = useState("");
 	const [GMBToken, setGMBToken] = useState("");
+	const [gameNumber, setGameNumber] = useState("");
 
 	const [tokenName, setTokenName] = useState("No connection to the network."); //default tokenName
 	const [tokenBalance, settokenBalance] = useState(
@@ -57,11 +53,9 @@ const TokenTransfer = () => {
 			setWallet(address);
 			setStatus(status);
 			addWalletListener();
-			const approved = await loadAllowanceAmount(address, GMBContractAddress, GamblingContractAddress);
-			setApproved(approved)
 		}
 		fetchData();
-	}, [walletAddress, tokenBalance, approved]);
+	}, [walletAddress, tokenBalance]);
 
 	function addWalletListener() {
 		if (window.ethereum) {
@@ -94,9 +88,10 @@ const TokenTransfer = () => {
 		setStatus(res.status);
 	}
 
-	const checkAllowedValue = async (allowance) => {
-		return allowance !== "" && BigNumber.from(allowance) > 99999999999999999999999
-
+	const handleClaim = async () => {
+		setBetValue(gameNumber);
+		const res = await claim(walletAddress, gameNumber);
+		setStatus(res.status);
 	}
 
 	const connectWalletPressed = async () => {
@@ -107,80 +102,48 @@ const TokenTransfer = () => {
 
 	return (
 		<div id="container">
-			{walletAddress.length > 0 ? (
-				"Connected: " +
-				String(walletAddress).substring(0, 6) +
-				"..." +
-				String(walletAddress).substring(38)
-			) : (
-				<button id="walletButton" onClick={connectWalletPressed}>
-				<span>Connect Wallet</span>
-				</button>
-			)}
-			<h4 style={{ paddingTop: "50px" }}>GMBToken Balance: {tokenBalance}</h4>
-			<h4 style={{ paddingTop: "50px" }}>Round Number: {roundNum}</h4>
-			<h4 style={{ paddingTop: "50px" }}>CoveragePerGMB: {coveragePerGMB}</h4>
-			<hr></hr>
-				<label>Bet Value:
-					<input 
-					type="text" 
-					value={betValue}
-					onChange={(e) => setBetValue(e.target.value)}
-					/>
-				</label>
-				<label>GMB Token:
-					<input 
-					type="text" 
-					value={GMBToken}
-					onChange={(e) => setGMBToken(e.target.value)}
-					/>
-				</label>
-				{
-					<input type="submit" value={checkAllowedValue(approved)? "participate":"Allow"} onClick={handleParticipation}/>
-				}
-			<p id="status">{status}</p>
+		{walletAddress.length > 0 ? (
+			"Connected: " +
+			String(walletAddress).substring(0, 6) +
+			"..." +
+			String(walletAddress).substring(38)
+		) : (
+	 		<button id="walletButton" onClick={connectWalletPressed}>
+			<span>Connect Wallet</span>
+	 		</button>
+		)}
+		<h4 style={{ paddingTop: "50px" }}>GMBToken Balance: {tokenBalance}</h4>
+		<h4 style={{ paddingTop: "50px" }}>Round Number: {roundNum}</h4>
+		<h4 style={{ paddingTop: "50px" }}>CoveragePerGMB: {coveragePerGMB}</h4>
+		<hr></hr>
+		<label>Bet Value:
+			<input 
+			type="text" 
+			value={betValue}
+			onChange={(e) => setBetValue(e.target.value)}
+			/>
+		</label>
+		<label>GMB Token:
+			<input 
+			type="text" 
+			value={GMBToken}
+			onChange={(e) => setGMBToken(e.target.value)}
+			/>
+		</label>
+		<input type="submit" value="participate" onClick={handleParticipation}/>
+		<hr></hr>
+		<label>Game Number:
+			<input 
+			type="text" 
+			value={gameNumber}
+			onChange={(e) => setGameNumber(e.target.value)}
+			/>
+		</label>
+		<input type="submit" value="claim" onClick={handleClaim}/>
+		<p id="status">{status}</p>
 
 		</div>
 	)
-
-	//the UI of our component
-	// return (
-	// 	<div id="container">
-	// 		<img id="logo" src={Ubclogo}></img>
-	// 		<button id="walletButton" onClick={connectWalletPressed}>
-	// 			{walletAddress.length > 0 ? (
-	// 				"Connected: " +
-	// 				String(walletAddress).substring(0, 6) +
-	// 				"..." +
-	// 				String(walletAddress).substring(38)
-	// 			) : (
-	// 				<span>Connect Wallet</span>
-	// 			)}
-	// 		</button>
-
-			// <h2 style={{ paddingTop: "50px" }}>Token Nmae:</h2>
-			// <p>{tokenName}</p>
-
-			// <h2 style={{ paddingTop: "50px" }}>Balance:</h2>
-			// <p>{tokenBalance}</p>
-
-	// 		<h2 style={{ paddingTop: "18px" }}>Transfer 1 UBC Token To:</h2>
-
-	// 		<div>
-	// 			<input
-	// 				type="text"
-	// 				placeholder="transfer token to:"
-	// 				onChange={(e) => setToAddress(e.target.value)}
-	// 				value={toAddress}
-	// 			/>
-	// 			<p id="status">{status}</p>
-
-	// 			<button id="publish" onClick={onUpdatePressed}>
-	// 				Transfer
-	// 			</button>
-	// 		</div>
-	// 	</div>
-	// );
 };
 
 export default TokenTransfer;
