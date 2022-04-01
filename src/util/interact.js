@@ -134,7 +134,7 @@ export const participate = async (fromAddress, betValue, gmbToken) => {
 	}
 
 	const transactionParameters = {
-		to: GMBContractAddress, // Required except during contract publications.
+		to: GamblingContractAddress, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
 		data: GamblingContract.methods.participate(gmbToken, betValue).encodeABI(),
 	};
@@ -161,54 +161,3 @@ export const participate = async (fromAddress, betValue, gmbToken) => {
 		};
 	}
 };
-
-
-// export const transferToken = async (fromAddress, toAddress) => {
-// 	let value = (10 ** 18).toFixed(0);
-// 	console.log(value);
-// 	//input error handling
-// 	if (!window.ethereum || fromAddress === null) {
-// 		return {
-// 			status:
-// 				"💡 Connect your Metamask wallet to update the message on the blockchain.",
-// 		};
-// 	}
-
-// 	if (toAddress.trim() === "") {
-// 		return {
-// 			status: "❌ Your message cannot be an empty string.",
-// 		};
-// 	}
-
-// 	// //set up transaction parameters
-// 	const transactionParameters = {
-// 		to: GMBContractAddress, // Required except during contract publications.
-// 		from: fromAddress, // must match user's active address.
-// 		data: GMBTokenContract.methods.transfer(toAddress, value).encodeABI(),
-// 	};
-
-// 	//sign the transaction
-// 	try {
-// 		const txHash = await window.ethereum.request({
-// 			method: "eth_sendTransaction",
-// 			params: [transactionParameters],
-// 		});
-// 		return {
-// 			status: (
-// 				<span>
-// 					✅{" "}
-// 					<a target="_blank" href={`https://rinkeby.etherscan.io/tx/${txHash}`}>
-// 						View the status of your transaction on Etherscan!
-// 					</a>
-// 					<br />
-// 					ℹ️ Once the transaction is verified by the network, the token balance
-// 					will be updated automatically.
-// 				</span>
-// 			),
-// 		};
-// 	} catch (error) {
-// 		return {
-// 			status: "😥 " + error.message,
-// 		};
-// 	}
-// };
