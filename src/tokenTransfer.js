@@ -10,6 +10,7 @@ import {
 	loadCoveragePerGMB,
 	loadRoundNum,
 	claim,
+	getGamesHistory,
 } from "./util/interact.js";
 
 import Ubclogo from "./ubc-logo.png";
@@ -94,6 +95,13 @@ const TokenTransfer = () => {
 		setStatus(res.status);
 	}
 
+	const handleGamesHistory = async () => {
+		const res = await getGamesHistory(roundNum);
+		// for(let i = 0; i < res.length; i++) {
+		// 	res[i]
+		// }
+	}
+
 	const connectWalletPressed = async () => {
 		const walletResponse = await connectWallet();
 		setStatus(walletResponse.status);
@@ -141,6 +149,8 @@ const TokenTransfer = () => {
 		</label>
 		<input type="submit" value="claim" onClick={handleClaim}/>
 		<p id="status">{status}</p>
+		<hr></hr>
+		<button onClick={handleGamesHistory}>Get Winners</button>
 
 		</div>
 	)

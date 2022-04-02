@@ -6,10 +6,10 @@ const Web3 = require("web3")
 const web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"))
 
 const GMBContractABI = require("../abis/GMBToken-abi.json");
-const GMBContractAddress = "0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F";
+const GMBContractAddress = "0x712516e61C8B383dF4A63CFe83d7701Bce54B03e";
 
 const GamblingContractABI = require("../abis/Gambling-abi.json");
-const GamblingContractAddress = "0x712516e61C8B383dF4A63CFe83d7701Bce54B03e";
+const GamblingContractAddress = "0xbCF26943C0197d2eE0E5D05c716Be60cc2761508";
 
 
 export const GMBTokenContract = new web3.eth.Contract(
@@ -204,4 +204,22 @@ export const claim = async (fromAddress, gameNumber) => {
 			status: "😥 " + error.message,
 		};
 	}
+};
+
+export const getGamesHistory = async (roundNum) => {
+	var history = new Array(roundNum);
+	for(let i = 1; i < roundNum; i++) {
+		let data = {};
+		data['winnerShare'] = await GamblingContract.methods.getGameWinnerShare(i).call();
+		let winners = await GamblingContract.methods.getGameWinners(i).call();
+		data['winners'] = []
+		for(let j = 0; j < winners.length; j++) {
+			if (winners[j].startsWith("0x0000000000000000000000000000000000000000"))
+				break;
+			data['winners'].push(winners[j]);
+		}
+		history[i-1] = data;
+	}
+	console.log(history);
+	return history;
 };
