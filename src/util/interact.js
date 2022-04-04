@@ -3,7 +3,7 @@ const Web3 = require("web3")
 
 // const alchemyKey = process.env.REACT_APP_ALCHEMY_KEY;
 // const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
-const web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"))
+const web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"));
 
 const GMBContractABI = require("../abis/GMBToken-abi.json");
 const GMBContractAddress = "0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F";
@@ -162,7 +162,7 @@ export const participate = async (fromAddress, betValue, gmbToken) => {
 	}
 };
 
-export const claim = async (fromAddress, gameNumber) => {
+export const claimPrize = async (fromAddress, gameNumber) => {
 	//input error handling
 	if (!window.ethereum || fromAddress === null) {
 		return {
@@ -180,7 +180,7 @@ export const claim = async (fromAddress, gameNumber) => {
 	const transactionParameters = {
 		to: GamblingContractAddress, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
-		data: GamblingContract.methods.claim(gameNumber).encodeABI(),
+		data: GamblingContract.methods.claimPrize(gameNumber).encodeABI(),
 	};
 
 	//sign the transaction
