@@ -199,3 +199,21 @@ export const claimPrize = async (fromAddress, gameNumber) => {
 		};
 	}
 };
+
+export const getGamesHistory = async (roundNum) => {
+	var history = new Array(roundNum);
+	for(let i = 1; i < roundNum; i++) {
+		let data = {};
+		data['winnerShare'] = await GamblingContract.methods.getGameWinnerShare(i).call();
+		let winners = await GamblingContract.methods.getGameWinners(i).call();
+		data['winners'] = []
+		for(let j = 0; j < winners.length; j++) {
+			if (winners[j].startsWith("0x0000000000000000000000000000000000000000"))
+				break;
+			data['winners'].push(winners[j]);
+		}
+		history[i-1] = data;
+	}
+	console.log(history);
+	return history;
+};

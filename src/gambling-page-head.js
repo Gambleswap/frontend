@@ -167,16 +167,28 @@ const Header = () => {
 				"..." +
 				String(walletAddress).substring(38))
 			) : (
-				<>
+					<nav className="sc-4cbab3e3-1 kKtmBR">
+
 					<div class="col-md-3"></div>
 					<div class="col-md-3">
-						<button id="walletButton" onClick={connectWalletPressed}>
+						<button class="btn" id="walletButton" onClick={connectWalletPressed}>
 						<span>Connect Wallet</span>
 						</button>
 					</div>
-					<div class="col-md-3"></div>
-					<div class="col-md-3" >Round Number: {roundNum}</div>
-				</>
+
+						<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC fOPopv">
+							<div className="sc-c4ec0fdf-0 sc-32d5f017-0 hUlRzh fOPopv">
+
+								<div className="sc-c4ec0fdf-0 iXqCiO">
+									<div className="sc-c4ec0fdf-0 dGKbaC">
+										<div className="sc-40beb420-0 iPIHoo">
+											<span className="sc-a01cb22d-0 bWjWCf sc-40beb420-1 fjJGoS">Round Number: {roundNum}</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</nav>
 			);
 };
 

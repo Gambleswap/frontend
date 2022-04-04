@@ -1,5 +1,3 @@
-// import React from "react";
-// import { useEffect, useState } from "react";
 import {
 	GMBTokenContract,
 	connectWallet,
@@ -11,6 +9,7 @@ import {
 	loadRoundNum,
 	claim,
 	claimPrize,
+	getGamesHistory,
 } from "./util/interact.js";
 
 import { useState, createContext, useContext, useEffect } from "react";
@@ -97,6 +96,13 @@ const Gambling = () => {
 		const res = await claimPrize(walletAddress, gameNumber);
 		setStatus(res.status);
 	};
+
+	const handleGamesHistory = async () => {
+		const res = await getGamesHistory(roundNum);
+		// for(let i = 0; i < res.length; i++) {
+		// 	res[i]
+		// }
+	}
 
 	const connectWalletPressed = async () => {
 		const walletResponse = await connectWallet();
