@@ -93,7 +93,6 @@ const Rewards = () => {
 
     const handleClaim = async (event) => {
         let roundNumber = event.target.getAttribute('roundNumber');
-        alert(roundNumber);
         const res = await claimPrize(walletAddress, roundNumber);
         setStatus(res.status);
     };
