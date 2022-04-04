@@ -171,12 +171,6 @@ export const claimPrize = async (fromAddress, gameNumber) => {
 		};
 	}
 
-	if (gameNumber.trim() === "") {
-		return {
-			status: "❌ Your message cannot be an empty string.",
-		};
-	}
-
 	const transactionParameters = {
 		to: GamblingContractAddress, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.

@@ -135,8 +135,8 @@ const Header = () => {
 				</div>
 				<div height="100%" className="sc-c4ec0fdf-0 sc-32d5f017-0 jGvODc chfQFH">
 					<div height="100%" className="sc-c4ec0fdf-0 sc-32d5f017-0 jGvODc chfQFH">
-						<div className="sc-c4ec0fdf-0 sc-32d5f017-0 sc-28c9ece7-0 dGKbaC fOPopv bJVlVi">
-							<div className="sc-194ed783-0 ifVMjR">
+						<div className="sc-c4ec0fdf-0 sc-32d5f017-0 sc-28c9ece7-0 dGKbaC fOPopv bJVlVi wallet">
+							<div className="sc-194ed783-0 ifVMjR wallet-img">
 								<svg viewBox="0 0 24 24" color="primary" width="24px" xmlns="http://www.w3.org/2000/svg"
 									 className="sc-5a69fd5e-0 dwUojQ">
 									<path fill-rule="evenodd" clip-rule="evenodd"
