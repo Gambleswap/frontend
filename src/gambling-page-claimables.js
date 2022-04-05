@@ -11,6 +11,7 @@ import {
     loadRoundNum,
     claim,
     claimPrize,
+    getGamesHistory,
 } from "./util/interact.js";
 
 import { useState, createContext, useContext, useEffect } from "react";
@@ -39,6 +40,8 @@ const Rewards = () => {
 
     const [toAddress, setToAddress] = useState("");
 
+    const [wins, setWins] = useState([]);
+
     //called only once
     useEffect(() => {
         async function fetchData() {
@@ -56,6 +59,9 @@ const Rewards = () => {
             setWallet(address);
             setStatus(status);
             addWalletListener();
+            const wins = await getHistory();
+            setWins(wins);
+            console.log(1)
         }
         fetchData();
     }, [walletAddress, tokenBalance]);
@@ -97,36 +103,36 @@ const Rewards = () => {
         setStatus(res.status);
     };
 
-    const connectWalletPressed = async () => {
-        const walletResponse = await connectWallet();
-        setStatus(walletResponse.status);
-        setWallet(walletResponse.address);
+    const getHistory = async () => {
+        const gameHistory = await getGamesHistory(walletAddress, roundNum);
+        return gameHistory;
     };
 
-    const wins = [
-        {
-            roundNumber: 1,
-            amount: 400,
-            claimable: true,
-            totalJackpotVal: 500000,
-            numberOfWinners: 10,
-            finalNumber: 30,
-            yourNumber: 32,
-            yourBet: 200
-        },
-        {
-            roundNumber: 2,
-            amount: 400,
-            claimable: false,
-            totalJackpotVal: 500000,
-            numberOfWinners: 10,
-            finalNumber: 30,
-            yourNumber: 32,
-            yourBet: 200
-        },
-    ]
+    // const wins = [
+    //     {
+    //         roundNumber: 1,
+    //         amount: 400,
+    //         claimable: true,
+    //         totalJackpotVal: 500000,
+    //         numberOfWinners: 10,
+    //         finalNumber: 30,
+    //         yourNumber: 32,
+    //         yourBet: 200
+    //     },
+    //     {
+    //         roundNumber: 2,
+    //         amount: 400,
+    //         claimable: false,
+    //         totalJackpotVal: 500000,
+    //         numberOfWinners: 10,
+    //         finalNumber: 30,
+    //         yourNumber: 32,
+    //         yourBet: 200
+    //     },
+    // ]
 
     const fillInWins = () => {
+        console.log(2)
         return (
             wins.map(win =>
                 (
@@ -196,11 +202,12 @@ const Rewards = () => {
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    {win.claimable ?
+                                                    {!win.isWon ? <p>Not Won</p> : !win.claimed ?
                                                         (
                                                             <button class="btn" type="button" roundNumber={win.roundNumber} onClick={handleClaim}>Claim</button>
                                                         ) :
-                                                            <p>Claimed</p>}
+                                                            <p>Claimed</p>
+                                                    }
                                                 </div>
                                             </div>
                                         </div>
@@ -214,48 +221,13 @@ const Rewards = () => {
         )
     }
 
-
     return (
         <div class="container">
-        <div class="row text-center justify-content-center">
-            {
-                fillInWins()
-            }
-
-            {/*<img class="card-img-top" src="..." alt="Card image cap">*/}
-{/*            <div class="card-body">*/}
-{/*                <h5 class="card-title align-middle">Upcoming Round</h5>*/}
-{/*                <form className="login100-form validate-form">*/}
-
-{/*                    <div class="wrap-input100 validate-input m-b-10" data-validate="Bet value is required">*/}
-{/*                        <input class="input100" type="text" name="betValue"*/}
-{/*                               value={betValue}*/}
-{/*                               onChange={(e) => setBetValue(e.target.value)}*/}
-{/*                               placeholder="Bet value"/>*/}
-{/*                        <span class="focus-input100"></span>*/}
-{/*                        <span class="symbol-input100">*/}
-{/*<i class="fa fa-user"></i>*/}
-{/*</span>*/}
-{/*                    </div>*/}
-{/*                    <div class="wrap-input100 validate-input m-b-10" data-validate="Amount is required">*/}
-{/*                        <input class="input100" type="text" name="amount"*/}
-{/*                               value={GMBToken}*/}
-{/*                               onChange={(e) => setGMBToken(e.target.value)} placeholder="GMB amount"/>*/}
-{/*                        <span class="focus-input100"></span>*/}
-{/*                        <span class="symbol-input100">*/}
-{/*<i class="fa fa-lock"></i>*/}
-{/*</span>*/}
-{/*                    </div>*/}
-{/*                    <div class="container-login100-form-btn p-t-10">*/}
-{/*                        <input className="btn" type="submit" value="Participate"*/}
-{/*                               onClick={handleParticipation}/>*/}
-
-{/*                    </div>*/}
-
-
-{/*                </form>*/}
-{/*            </div>*/}
-        </div>
+            <div class="row text-center justify-content-center"> 
+                {
+                    fillInWins()
+                }
+            </div>
         </div>
     )
 };

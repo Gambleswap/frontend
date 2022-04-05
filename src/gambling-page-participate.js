@@ -97,13 +97,6 @@ const Gambling = () => {
 		setStatus(res.status);
 	};
 
-	const handleGamesHistory = async () => {
-		const res = await getGamesHistory(roundNum);
-		// for(let i = 0; i < res.length; i++) {
-		// 	res[i]
-		// }
-	}
-
 	const connectWalletPressed = async () => {
 		const walletResponse = await connectWallet();
 		setStatus(walletResponse.status);

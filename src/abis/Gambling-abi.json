@@ -241,6 +241,77 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "roundNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "getUserGameHistory",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "prize",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "jackpotValue",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "winnerNum",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "finalNumber",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userBetValue",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "userGMB",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isWon",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "claimed",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "participated",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct IGambling.UserGameHistory",
+        "name": "gameHistory",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
