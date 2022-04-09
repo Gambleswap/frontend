@@ -1,77 +1,93 @@
 import {
-	GMBTokenContract,
 	connectWallet,
 	participate,
-	loadTokenName,
-	loadTokenAccountBalance,
-	getCurrentWalletConnected,
-	loadCoveragePerGMB,
-	loadRoundNum,
-	claim,
-	claimPrize,
-	getGamesHistory,
 } from "./util/interact.js";
 
-import { useState, createContext, useContext, useEffect } from "react";
+import React from "react";
+import {getCurrentRound, loadCoveragePerGMB, loadRoundNum} from "./util/interact";
 
-const UserContext = createContext();
-
-
-const Gambling = () => {
-	//state variables
-	const [walletAddress, setWallet] = useState("");
-	const [status, setStatus] = useState("");
-	const [betValue, setBetValue] = useState("");
-	const [GMBToken, setGMBToken] = useState("");
-	const [gameNumber, setGameNumber] = useState("");
-
-	const [tokenName, setTokenName] = useState("No connection to the network."); //default tokenName
-	const [tokenBalance, setTokenBalance] = useState(
-		"No connection to the network."
-	);
-	const [coveragePerGMB, setCoveragePerGMB] = useState(
-		"No connection to the network."
-	);
-	const [roundNum, setRoundNum] = useState(
-		"No connection to the network."
-	);
+class Gambling extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			walletAddress: "",
+			betValue: "",
+			gmbAmount: "",
+			status: "",
+			coveragePerGMB: "",
+			roundNum: "",
+			currentRoundState: {},
+		};
+	}
 
 
-	const [toAddress, setToAddress] = useState("");
+	setCurrentRoundState(_new) {
+		this.setState(state => {
+			let {currentRoundState, ...remaining} = state;
+			remaining.currentRoundState = _new;
+			return remaining;
+		})
+	}
 
-	//called only once
-	useEffect(() => {
-		async function fetchData() {
-			if (walletAddress !== "") {
-				const tokenBalance = await loadTokenAccountBalance(walletAddress);
-				setTokenBalance(tokenBalance);
-			}
-			const tokenName = await loadTokenName();
-			setTokenName(tokenName);
-			const coveragePerGMB = await loadCoveragePerGMB();
-			setCoveragePerGMB(coveragePerGMB);
-			const roundNum = await loadRoundNum();
-			setRoundNum(roundNum);
-			const { address, status } = await getCurrentWalletConnected();
-			setWallet(address);
-			setStatus(status);
-			addWalletListener();
-		}
-		fetchData();
-	}, [walletAddress, tokenBalance]);
+	setCoveragePerGMB(_new) {
+		this.setState(state => {
+			let {coveragePerGMB, ...remaining} = state;
+			remaining.coveragePerGMB = _new;
+			return remaining;
+		})
+	}
 
-	function addWalletListener() {
+	setRoundNum(_new) {
+		this.setState(state => {
+			let {roundNum, ...remaining} = state;
+			remaining.roundNum = _new;
+			return remaining;
+		})
+	}
+
+	setStatus(_new) {
+		this.setState(state => {
+			let {status, ...remaining} = state;
+			remaining.status = _new
+		})
+	}
+
+	setGMBAmount(_new) {
+		this.setState(state => {
+			let {gmbAmount, ...remaining} = state;
+			remaining.gmbAmount = _new;
+			return remaining;
+		})
+	}
+
+	setWallet(_new) {
+		this.setState(state => {
+			let {walletAddress, ...remaining} = state;
+			remaining.walletAddress = _new;
+			return remaining;
+		})
+	}
+
+	setBetValue(_new) {
+		this.setState(state => {
+			let {betValue, ...remaining} = state;
+			remaining.betValue = _new;
+			return remaining;
+		})
+	}
+
+	addWalletListener() {
 		if (window.ethereum) {
 			window.ethereum.on("accountsChanged", (accounts) => {
 				if (accounts.length > 0) {
-					setWallet(accounts[0]);
+					this.setWallet(accounts[0]);
 				} else {
-					setWallet("");
-					setStatus("🦊 Connect to Metamask using the top right button.");
+					this.setWallet("");
+					this.setStatus("🦊 Connect to Metamask using the top right button.");
 				}
 			});
 		} else {
-			setStatus(
+			this.setStatus(
 				<p>
 					{" "}
 					🦊{" "}
@@ -84,75 +100,146 @@ const Gambling = () => {
 		}
 	}
 
-	const handleParticipation = async () => {
-		setBetValue(betValue);
-		setGMBToken(GMBToken);
-		const res = await participate(walletAddress, betValue, GMBToken);
-		setStatus(res.status);
+	fetchData = async () => {
+		this.addWalletListener();
+		await this.connectWalletPressed();
+
+		const coveragePerGMB = await loadCoveragePerGMB();
+
+		this.setCoveragePerGMB(coveragePerGMB);
+
+		const roundNum = await loadRoundNum();
+
+		this.setRoundNum(roundNum);
+		console.log(await getCurrentRound(this.state.walletAddress, roundNum));
+		this.setCurrentRoundState(await getCurrentRound(this.state.walletAddress, roundNum));
+
 	};
 
-	const handleClaim = async () => {
-		setBetValue(gameNumber);
-		const res = await claimPrize(walletAddress, gameNumber);
-		setStatus(res.status);
+
+	componentDidMount = async () => {
+		this.interval = setInterval(() => this.fetchData(), 3000);
 	};
 
-	const connectWalletPressed = async () => {
+	handleParticipation = async () => {
+		await participate(this.state.walletAddress, this.state.betValue, this.state.gmbAmount);
+	};
+
+
+	connectWalletPressed = async () => {
 		const walletResponse = await connectWallet();
-		setStatus(walletResponse.status);
-		setWallet(walletResponse.address);
+		this.setStatus(walletResponse.status);
+		this.setWallet(walletResponse.address);
 	};
 
-	return (
+	render() {
+		return (
+			<div className="card participate">
+				{/*<img className="card-img-top" src="..." alt="Card image cap">*/}
+				<div className="card-body">
+					<h5 className="card-title align-middle">Upcoming Round</h5>
+					<div className="container">
+						<div className="row">
+							<div className="col-md-6">
+								<div className="sc-c4ec0fdf-0 sc-57476884-0 dGKbaC gTklXV">
+									<div className="sc-c4ec0fdf-0 eQkZMk">
+										<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC jdlnRz">
+											<div fontSize="12px" color="textSubtle"
+												 className="sc-be365e-0 dmGxwu">Total Jackpot Value
+											</div>
+											<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH">
+												<div color="text"
+													 className="sc-be365e-0 krVkBZ">{this.state.currentRoundState ? this.state.currentRoundState.totalJackpotVal : "N/A"}</div>
+											</div>
+										</div>
+										<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC jdlnRz">
+											<div fontSize="12px" color="textSubtle"
+												 className="sc-be365e-0 dmGxwu">Round number
+											</div>
+											<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH">
+												<div color="text"
+													 className="sc-be365e-0 krVkBZ">{this.state.roundNum}</div>
+											</div>
+										</div>
+										<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC jdlnRz">
+											<div fontSize="12px" color="textSubtle"
+												 className="sc-be365e-0 dmGxwu">GMB Coverage
+											</div>
+											<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH">
+												<div color="text"
+													 className="sc-be365e-0 krVkBZ">{this.state.coveragePerGMB.slice(0, -12)}</div>
+											</div>
+										</div>
+										{
+											this.state.currentRoundState.participated ?
+												<>
+													<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC jdlnRz">
+														<div fontSize="12px" color="textSubtle"
+															 className="sc-be365e-0 dmGxwu">Your Number
+														</div>
+														<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH">
+															<div color="text"
+																 className="sc-be365e-0 krVkBZ">{this.state.currentRoundState.yourNumber}</div>
+														</div>
+													</div>
+													<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC jdlnRz">
+														<div fontSize="12px" color="textSubtle"
+															 className="sc-be365e-0 dmGxwu">Your Bet
+														</div>
+														<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH">
+															<div color="text"
+																 className="sc-be365e-0 krVkBZ">{this.state.currentRoundState.yourBet}</div>
+														</div>
+													</div>
+												</>
+												: <></>
+										}
+									</div>
+								</div>
+							</div>
+							<div className="col-md-5">
 
-		<div class="card participate">
-			{/*<img class="card-img-top" src="..." alt="Card image cap">*/}
-				<div class="card-body">
-					<h5 class="card-title align-middle">Upcoming Round</h5>
-					<form className="login100-form validate-form">
+								{
+									this.state.currentRoundState.participated ? <></> :
+									<form className="login100-form validate-form" id="participation-form"
+										  onSubmit={this.handleParticipation}>
+										<div className="wrap-input100 validate-input m-b-10"
+											 data-validate="Bet value is required">
+											<input className="input100" type="text" name="betValue"
+												   value={this.state.betValue}
+												   onChange={(e) => this.setBetValue(e.target.value)}
+												   placeholder="Bet value"/>
 
-						<div class="wrap-input100 validate-input m-b-10" data-validate="Bet value is required">
-							<input class="input100" type="text" name="betValue"
-								   value={betValue}
-								   onChange={(e) => setBetValue(e.target.value)}
-								   placeholder="Bet value"/>
-								<span class="focus-input100"></span>
-								<span class="symbol-input100">
-<i class="fa fa-user"></i>
-</span>
+											<span className="focus-input100"></span>
+											<span className="symbol-input100">
+											<i className="fa fa-user"></i>
+										</span>
+										</div>
+										<div className="wrap-input100 validate-input m-b-10"
+											 data-validate="Amount is required">
+											<input className="input100" type="text" name="amount"
+												   value={this.state.gmbAmount}
+												   onChange={(e) => this.setGMBAmount(e.target.value)}
+												   placeholder="GMB amount"/>
+											<span className="focus-input100"></span>
+											<span className="symbol-input100">
+											<i className="fa fa-lock"></i>
+										</span>
+										</div>
+										<div className="container-login100-form-btn p-t-10">
+											<input className="btn" value="Participate" type="submit"/>
+										</div>
+									</form>
+								}
+							</div>
 						</div>
-						<div class="wrap-input100 validate-input m-b-10" data-validate="Amount is required">
-							<input class="input100" type="text" name="amount"
-								   value={GMBToken}
-								   onChange={(e) => setGMBToken(e.target.value)} placeholder="GMB amount"/>
-								<span class="focus-input100"></span>
-								<span class="symbol-input100">
-<i class="fa fa-lock"></i>
-</span>
-						</div>
-						<div class="container-login100-form-btn p-t-10">
-							<input className="btn" type="submit" value="Participate"
-								   onClick={handleParticipation}/>
-
-						</div>
-
-
-					</form>
+					</div>
 				</div>
-		</div>
+			</div>
 
-	)
-};
+		)
+	}
+}
 
 export default Gambling;
 
-
-{/*<label>Game Number:*/}
-{/*	<input */}
-{/*	type="text" */}
-{/*	value={gameNumber}*/}
-{/*	onChange={(e) => setGameNumber(e.target.value)}*/}
-{/*	/>*/}
-{/*</label>*/}
-{/*<input type="submit" value="claim" onClick={handleClaim}/>*/}
-{/*<p id="status">{status}</p>*/}

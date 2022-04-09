@@ -1,16 +1,15 @@
 require("dotenv").config();
-const Web3 = require("web3")
+const Web3 = require("web3");
 
 // const alchemyKey = process.env.REACT_APP_ALCHEMY_KEY;
 // const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
 const web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"));
 
 const GMBContractABI = require("../abis/GMBToken-abi.json");
-const GMBContractAddress = "0x712516e61C8B383dF4A63CFe83d7701Bce54B03e";
+const GMBContractAddress = "0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F";
 
 const GamblingContractABI = require("../abis/Gambling-abi.json");
-const GamblingContractAddress = "0xbCF26943C0197d2eE0E5D05c716Be60cc2761508";
-
+const GamblingContractAddress = "0x712516e61C8B383dF4A63CFe83d7701Bce54B03e";
 
 export const GMBTokenContract = new web3.eth.Contract(
 	GMBContractABI,
@@ -33,6 +32,11 @@ export const loadCoveragePerGMB = async () => {
 
 export const loadRoundNum = async () => {
 	return await GamblingContract.methods.getCurrentRound().call();
+};
+
+export const getJackpotValue = async () => {
+	let round = await GamblingContract.methods.getCurrentRound().call();
+	return await GamblingContract.methods.getJackpotValue(round).call();
 };
 
 export const loadTokenAccountBalance = async (account) => {
@@ -85,7 +89,7 @@ export const getCurrentWalletConnected = async () => {
 			if (addressArray.length > 0) {
 				return {
 					address: addressArray[0],
-					status: "👆🏽 input the transfer to addresst in the text-field above.",
+					status: "👆🏽 input the transfer to address in the text-field above.",
 				};
 			} else {
 				return {
@@ -205,16 +209,26 @@ export const getGamesHistory = async (fromAddress, roundNum) => {
 	for(let i = 1; i < roundNum; i++) {
 		let data = {};
 		let gameHistory = await GamblingContract.methods.getUserGameHistory(fromAddress, i).call();
-		data['roundNumber'] = i
-		data['claimed'] = gameHistory.claimed
-		data['isWon'] =  gameHistory.isWon
-		data['totalJackpotVal'] = gameHistory.jackpotValue
-		data['amount'] = gameHistory.prize
-		data['yourNumber'] = gameHistory.userBetValue
-		data['yourBet'] = gameHistory.userGMB
-		data['finalNumber'] = gameHistory.finalNumber
-		data['numberOfWinners'] = gameHistory.winnerNum
+		data['roundNumber'] = i;
+		data['claimed'] = gameHistory.claimed;
+		data['isWon'] =  gameHistory.isWon;
+		data['totalJackpotVal'] = gameHistory.jackpotValue;
+		data['amount'] = gameHistory.prize;
+		data['yourNumber'] = gameHistory.userBetValue;
+		data['yourBet'] = gameHistory.userGMB;
+		data['finalNumber'] = gameHistory.finalNumber;
+		data['numberOfWinners'] = gameHistory.winnerNum;
 		history[i-1] = data;
 	}
 	return history;
+};
+
+export const getCurrentRound = async (fromAddress, roundNum) => {
+	let data = {};
+	let gameHistory = await GamblingContract.methods.getUserGameHistory(fromAddress, roundNum).call();
+	data['participated'] = await GamblingContract.methods.participated(roundNum, fromAddress).call();
+	data['totalJackpotVal'] = gameHistory.jackpotValue;
+	data['yourNumber'] = gameHistory.userBetValue;
+	data['yourBet'] = gameHistory.userGMB;
+	return data
 };
