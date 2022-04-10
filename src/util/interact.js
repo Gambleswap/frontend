@@ -61,7 +61,10 @@ export const uniswapRoute = async (fromAddress, token0, token1, to, amount, type
 	console.log(trade);
 
 	const slippageTolerance = new Percent(`${slippage*100}`, "10000"); // 50 bips, or 0.50%
-	const path = trade[0].getRoute();
+	let path = [];
+	for (let i=0; i < trade[0].route.path.length; i++){
+		path.push(trade[0].route.path[i].address)
+	}
 
 	const amountOutMin = trade[0].minimumAmountOut(slippageTolerance).raw; // needs to be converted to e.g. hex
 	const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
@@ -103,7 +106,7 @@ export const swapExactTokensForTokens = async (fromAddress, amount, amountOutMin
 	const transactionParameters = {
 		to: GambleswapRouterAddress, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
-		data: GambleswapRouterContract.methods.swapExactTokensForTokens(amount, amountOutMin, path, to, deadline).encodeABI(),
+		data: GambleswapRouterContract.methods.swapExactTokensForTokens(`${amount}`, `${amountOutMin}`, path, to, deadline).encodeABI(),
 	};
 
 	//sign the transaction

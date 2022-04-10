@@ -86,8 +86,10 @@ class Swap extends React.Component {
 
     componentDidMount = async () => {
         this.addWalletListener();
-        await this.fetchData();
-        this.interval = setInterval(() => this.fetchData(), 3000);
+        await this.connectWalletPressed();
+        await this.handleSwap()
+        // await this.fetchData();
+        // this.interval = setInterval(() => this.fetchData(), 3000);
     };
 
 
@@ -102,7 +104,7 @@ class Swap extends React.Component {
         const RAD = "0x8464135c8F25Da09e49BC8782676a84730C318bC";
         const DNI = "0x71C95911E9a5D330f4D621842EC243EE1343292e";
 
-        uniswapRoute(this.state.walletAddress, RAD, DNI, this.state.walletAddress, "1000000000000000000", TradeType.EXACT_INPUT, 0.5);
+        uniswapRoute(this.state.walletAddress, RAD, DNI, this.state.walletAddress, "5000000", TradeType.EXACT_INPUT, 0.5);
         this.interval = setInterval(() => this.fetchData(), 3000);
     };
 
