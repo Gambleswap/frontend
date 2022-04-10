@@ -7,6 +7,7 @@ import {
 } from "./util/interact.js";
 
 import React from "react";
+import {Link} from "react-router-dom";
 
 class Header extends React.Component {
 	constructor(props) {
@@ -92,13 +93,15 @@ class Header extends React.Component {
 
 				<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC fOPopv">
 					<div className="sc-c4ec0fdf-0 sc-32d5f017-0 hUlRzh fOPopv">
-						<div className="sc-c4ec0fdf-0 iXqCiO">
-							<div className="sc-c4ec0fdf-0 dGKbaC">
-								<div className="sc-40beb420-0 iPIHoo">
-									<span className="sc-a01cb22d-0 bWjWCf sc-40beb420-1 LIvgw">{this.state.tokenBalance} $GMB</span>
+						<Link to="/swap">
+							<div className="sc-c4ec0fdf-0 iXqCiO">
+								<div className="sc-c4ec0fdf-0 dGKbaC">
+									<div className="sc-40beb420-0 iPIHoo">
+										<span className="sc-a01cb22d-0 bWjWCf sc-40beb420-1 LIvgw">{this.state.tokenBalance} $GMB</span>
+									</div>
 								</div>
 							</div>
-						</div>
+						</Link>
 						{/*<div className="sc-c4ec0fdf-0 iXqCiO">*/}
 						{/*	<div className="sc-c4ec0fdf-0 dGKbaC">*/}
 						{/*		<div className="sc-40beb420-0 iPIHoo">*/}

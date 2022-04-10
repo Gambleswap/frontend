@@ -1,15 +1,79 @@
+import {Route, Token, Fetcher, Trade, TokenAmount, Pair, Percent} from "@gambleswap/sdk";
+// const { Fetcher } = require('@uniswap/sdk');
+var ethers = require('ethers');
 require("dotenv").config();
 const Web3 = require("web3");
 
+var url = "http://127.0.0.1:8545";
+var provider = new ethers.providers.JsonRpcProvider(url);
 // const alchemyKey = process.env.REACT_APP_ALCHEMY_KEY;
 // const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
-const web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"));
+const web3 = new Web3(new Web3.providers.HttpProvider(url));
 
 const GMBContractABI = require("../abis/GMBToken-abi.json");
 const GMBContractAddress = "0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F";
 
 const GamblingContractABI = require("../abis/Gambling-abi.json");
 const GamblingContractAddress = "0x712516e61C8B383dF4A63CFe83d7701Bce54B03e";
+
+const GambleswapRouterABI = require("../abis/GambleswapRouter-abi.json");
+const GambleswapRouterAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+
+const chainId = 31337;
+
+
+export const uniswapRoute = async (fromAddress, token0, token1, to, amount, type, slippage) => {
+
+	// note that you may want/need to handle this async code differently,
+	// for example if top-level await is not an option
+	const RAD = await Fetcher.fetchTokenData(chainId, token0, provider);
+	console.log(RAD);
+	const DNI = await Fetcher.fetchTokenData(chainId, token1, provider);
+	console.log(DNI);
+	const pair = await Fetcher.fetchPairData(RAD, DNI, provider);
+	const route = new Route([pair], RAD);
+
+	// const trade = new Trade(
+	// 	route,
+	// 	new TokenAmount(RAD, "1000000000000000000"),
+	// 	type
+	// );
+	// console.log(trade.executionPrice.toSignificant(6));
+	// console.log(trade.nextMidPrice.toSignificant(6));
+	let allPairs = [];
+	for (var addr1 of Object.keys(Pair.cache)) {
+		for (var addr2 of Object.keys(Pair.cache[addr1])) {
+			console.log(Pair.cache[addr1][addr2]);
+			allPairs.push(await Fetcher.fetchPairData(
+				await Fetcher.fetchTokenData(chainId, addr1, provider),
+				await Fetcher.fetchTokenData(chainId, addr2, provider),
+				provider, Pair.cache[addr1][addr2]
+				)
+			)
+		}
+	}
+	console.log(allPairs);
+	let trade = Trade.bestTradeExactIn(
+		allPairs,
+		new TokenAmount(RAD, amount),
+		DNI
+	);
+	console.log(trade);
+
+	const slippageTolerance = new Percent(`${slippage*100}`, "10000"); // 50 bips, or 0.50%
+	const path = trade[0].getRoute();
+
+	const amountOutMin = trade[0].minimumAmountOut(slippageTolerance).raw; // needs to be converted to e.g. hex
+	const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
+	swapExactTokensForTokens(fromAddress, amount, amountOutMin, path, to, deadline)
+	// const value = trade.inputAmount.raw; // // needs to be converted to e.g. hex
+
+	// console.log(pair.token0Price)
+	// const route = new Route([pair], token0);
+
+	// console.log(route.midPrice.toSignificant(6)); // 201.306
+	// console.log(route.midPrice.invert().toSignificant(6)); // 0.00496756
+};
 
 export const GMBTokenContract = new web3.eth.Contract(
 	GMBContractABI,
@@ -21,9 +85,48 @@ export const GamblingContract = new web3.eth.Contract(
 	GamblingContractAddress
 );
 
-export const loadTokenName = async () => {
-	const tokenName = await GMBTokenContract.methods.name().call();
-	return tokenName;
+export const GambleswapRouterContract = new web3.eth.Contract(
+	GambleswapRouterABI,
+	GambleswapRouterAddress
+);
+
+export const swapExactTokensForTokens = async (fromAddress, amount, amountOutMin, path, to, deadline) => {
+	console.log(`${fromAddress}, ${amount}, ${amountOutMin}, ${path}, ${to}, ${deadline}`);
+	//input error handling
+	if (!window.ethereum || fromAddress === null) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	const transactionParameters = {
+		to: GambleswapRouterAddress, // Required except during contract publications.
+		from: fromAddress, // must match user's active address.
+		data: GambleswapRouterContract.methods.swapExactTokensForTokens(amount, amountOutMin, path, to, deadline).encodeABI(),
+	};
+
+	//sign the transaction
+	try {
+		const txHash = await window.ethereum.request({
+			method: "eth_sendTransaction",
+			params: [transactionParameters],
+		});
+		return {
+			status: (
+				<span>
+					✅{" "}
+					<a target="_blank" href={`https://rinkeby.etherscan.io/tx/${txHash}`}>
+						View the status of your transaction on Etherscan!
+					</a>
+				</span>
+			),
+		};
+	} catch (error) {
+		return {
+			status: "😥 " + error.message,
+		};
+	}
 };
 
 export const loadCoveragePerGMB = async () => {
@@ -32,11 +135,6 @@ export const loadCoveragePerGMB = async () => {
 
 export const loadRoundNum = async () => {
 	return await GamblingContract.methods.getCurrentRound().call();
-};
-
-export const getJackpotValue = async () => {
-	let round = await GamblingContract.methods.getCurrentRound().call();
-	return await GamblingContract.methods.getJackpotValue(round).call();
 };
 
 export const loadTokenAccountBalance = async (account) => {
