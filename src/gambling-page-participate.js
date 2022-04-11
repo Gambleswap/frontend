@@ -141,7 +141,7 @@ class Gambling extends React.Component {
 					<h5 className="card-title align-middle">Upcoming Round</h5>
 					<div className="container">
 						<div className="row">
-							<div className="col-md-6">
+							<div className={this.state.currentRoundState.participated? "col-md-12" : "col-md-6"}>
 								<div className="sc-c4ec0fdf-0 sc-57476884-0 dGKbaC gTklXV">
 									<div className="sc-c4ec0fdf-0 eQkZMk">
 										<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC jdlnRz">
@@ -198,41 +198,40 @@ class Gambling extends React.Component {
 									</div>
 								</div>
 							</div>
-							<div className="col-md-5">
+							{
+								this.state.currentRoundState.participated ? <></> :
+									<div className="col-md-5">
+										<form className="login100-form validate-form" id="participation-form"
+											  onSubmit={this.handleParticipation}>
+											<div className="wrap-input100 validate-input m-b-10"
+												 data-validate="Bet value is required">
+												<input className="input100" type="text" name="betValue"
+													   value={this.state.betValue}
+													   onChange={(e) => this.setBetValue(e.target.value)}
+													   placeholder="Bet value"/>
 
-								{
-									this.state.currentRoundState.participated ? <></> :
-									<form className="login100-form validate-form" id="participation-form"
-										  onSubmit={this.handleParticipation}>
-										<div className="wrap-input100 validate-input m-b-10"
-											 data-validate="Bet value is required">
-											<input className="input100" type="text" name="betValue"
-												   value={this.state.betValue}
-												   onChange={(e) => this.setBetValue(e.target.value)}
-												   placeholder="Bet value"/>
-
-											<span className="focus-input100"></span>
-											<span className="symbol-input100">
+												<span className="focus-input100"></span>
+												<span className="symbol-input100">
 											<i className="fa fa-user"></i>
 										</span>
-										</div>
-										<div className="wrap-input100 validate-input m-b-10"
-											 data-validate="Amount is required">
-											<input className="input100" type="text" name="amount"
-												   value={this.state.gmbAmount}
-												   onChange={(e) => this.setGMBAmount(e.target.value)}
-												   placeholder="GMB amount"/>
-											<span className="focus-input100"></span>
-											<span className="symbol-input100">
+											</div>
+											<div className="wrap-input100 validate-input m-b-10"
+												 data-validate="Amount is required">
+												<input className="input100" type="text" name="amount"
+													   value={this.state.gmbAmount}
+													   onChange={(e) => this.setGMBAmount(e.target.value)}
+													   placeholder="GMB amount"/>
+												<span className="focus-input100"></span>
+												<span className="symbol-input100">
 											<i className="fa fa-lock"></i>
 										</span>
-										</div>
-										<div className="container-login100-form-btn p-t-10">
-											<input className="btn" value="Participate" type="submit"/>
-										</div>
-									</form>
-								}
-							</div>
+											</div>
+											<div className="container-login100-form-btn p-t-10">
+												<input className="btn" value="Participate" type="submit"/>
+											</div>
+										</form>
+									</div>
+							}
 						</div>
 					</div>
 				</div>

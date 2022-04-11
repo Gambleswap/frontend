@@ -22,22 +22,17 @@ const GambleswapRouterAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 const chainId = 31337;
 
 export const getAmount = async (token0, token1, type, value, slippage) => {
-	console.log(`before ${value}`);
 	var BN = web3.utils.BN;
 	const slippageTolerance = new Percent(`${slippage*100}`, "10000"); // 50 bips, or 0.50%
 	const RAD = await Fetcher.fetchTokenData(chainId, token0, provider);
 	const DNI = await Fetcher.fetchTokenData(chainId, token1, provider);
 	const pair = await Fetcher.fetchPairData(RAD, DNI, provider);
-	console.log(`${pair.reserve0.raw} ${pair.reserve1.raw}`)
 	let route = new Route([pair], RAD, DNI);
 	let trade =
 		type === TradeType.EXACT_INPUT ? new Trade(route, new TokenAmount(RAD, value), type, slippageTolerance)
 			:
 			new Trade(route, new TokenAmount(DNI, value), type, slippageTolerance);
 	const res = type === TradeType.EXACT_INPUT ? trade.minimumAmountOut(slippageTolerance).raw : trade.maximumAmountIn(slippageTolerance).raw
-	console.log(`what the hell ${res}`);
-	// console.log(`what the hell ${new BN(res)}`);
-	// console.log(`what the hell ${res.divn(10**18)}`);
 	return res
 };
 
@@ -46,9 +41,7 @@ export const uniswapRoute = async (fromAddress, token0, token1, to, amount, type
 	// note that you may want/need to handle this async code differently,
 	// for example if top-level await is not an option
 	const RAD = await Fetcher.fetchTokenData(chainId, token0, provider);
-	console.log(RAD);
 	const DNI = await Fetcher.fetchTokenData(chainId, token1, provider);
-	console.log(DNI);
 	const pair = await Fetcher.fetchPairData(RAD, DNI, provider);
 	const route = new Route([pair], RAD);
 
@@ -62,7 +55,6 @@ export const uniswapRoute = async (fromAddress, token0, token1, to, amount, type
 	let allPairs = [];
 	for (var addr1 of Object.keys(Pair.cache)) {
 		for (var addr2 of Object.keys(Pair.cache[addr1])) {
-			console.log(Pair.cache[addr1][addr2]);
 			allPairs.push(await Fetcher.fetchPairData(
 				await Fetcher.fetchTokenData(chainId, addr1, provider),
 				await Fetcher.fetchTokenData(chainId, addr2, provider),
@@ -71,15 +63,16 @@ export const uniswapRoute = async (fromAddress, token0, token1, to, amount, type
 			)
 		}
 	}
+	let ta = new TokenAmount(RAD, amount);
 	let trade = type === TradeType.EXACT_INPUT ?
 		Trade.bestTradeExactIn(
 		allPairs,
-		new TokenAmount(RAD, amount),
+		ta,
 		DNI
 	) : Trade.bestTradeExactOut(
 			allPairs,
-			new TokenAmount(RAD, amount),
-			DNI
+			DNI,
+			ta
 		);
 
 

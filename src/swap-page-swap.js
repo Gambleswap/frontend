@@ -103,7 +103,6 @@ class Swap extends React.Component {
 
     fetchBalances = async () => {
         var amount0, amount1;
-        console.log(this.state.fromToken);
         if (this.state.fromToken !== "")
             amount0 = (await loadTokenAccountBalance(this.state.walletAddress, this.state.fromToken))/10**18;
         else amount0 = "";
@@ -118,8 +117,6 @@ class Swap extends React.Component {
                 token1: amount1
             }
         )
-
-        console.log(this.state.balance)
 
     };
 

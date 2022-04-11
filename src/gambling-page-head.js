@@ -94,7 +94,6 @@ class Header extends React.Component {
 
 				<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC fOPopv">
 					<div className="sc-c4ec0fdf-0 sc-32d5f017-0 hUlRzh fOPopv">
-						<Link to="/swap">
 							<div className="sc-c4ec0fdf-0 iXqCiO">
 								<div className="sc-c4ec0fdf-0 dGKbaC">
 									<div className="sc-40beb420-0 iPIHoo">
@@ -102,11 +101,14 @@ class Header extends React.Component {
 									</div>
 								</div>
 							</div>
-						</Link>
 						{/*<div className="sc-c4ec0fdf-0 iXqCiO">*/}
 						{/*	<div className="sc-c4ec0fdf-0 dGKbaC">*/}
 						{/*		<div className="sc-40beb420-0 iPIHoo">*/}
-						{/*			<span className="sc-a01cb22d-0 bWjWCf sc-40beb420-1 fjJGoS">Round Number: {this.state.roundNum}</span>*/}
+						{/*			<span className="sc-a01cb22d-0 bWjWCf sc-40beb420-1 fjJGoS">*/}
+						{/*				<Link to="/swap">*/}
+						{/*					<img src="https://img.icons8.com/nolan/96/replace.png" width={50}/>*/}
+						{/*				</Link>*/}
+						{/*			</span>*/}
 						{/*		</div>*/}
 						{/*	</div>*/}
 						{/*</div>*/}
@@ -120,7 +122,25 @@ class Header extends React.Component {
 						{/*</div>*/}
 					</div>
 				</div>
+
 				<div height="100%" className="sc-c4ec0fdf-0 sc-32d5f017-0 jGvODc chfQFH">
+					<div className="sc-c4ec0fdf-0 eFruoX" style={{"margin-right": "10px"}}>
+						<div className="sc-5c939b6f-1 fhRTdy">
+							<button className="sc-95d8b156-0 jjbUqY" scale="xs">
+								<Link to="/gambling">
+									<img src="https://img.icons8.com/nolan/96/dice.png" width={50}/>
+								</Link>
+							</button>
+						</div>
+					</div>
+					<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC fOPopv" style={{"margin-right": "10px"}}>
+						<button className="sc-95d8b156-0 iEdSHP sc-a97aa614-0 jMtDSu" scale="sm"
+								id="open-settings-dialog-button">
+								<Link to="/swap">
+									<img src="https://img.icons8.com/nolan/96/replace.png" width={50}/>
+								</Link>
+						</button>
+					</div>
 					<div height="100%" className="sc-c4ec0fdf-0 sc-32d5f017-0 jGvODc chfQFH">
 						<div className="sc-c4ec0fdf-0 sc-32d5f017-0 sc-28c9ece7-0 dGKbaC fOPopv bJVlVi wallet">
 							<div className="sc-194ed783-0 ifVMjR wallet-img">
@@ -135,7 +155,9 @@ class Header extends React.Component {
 							</div>
 						</div>
 					</div>
+
 				</div>
+
 			</nav>
 			//
 			// <div className="row">
