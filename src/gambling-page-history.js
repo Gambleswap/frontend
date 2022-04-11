@@ -88,7 +88,6 @@ class History extends React.Component {
     handleClaim = async (event) => {
         let roundNumber = event.target.getAttribute('round-number');
         const res = await claimPrize(this.state.walletAddress, roundNumber);
-        this.setStatus(res.status);
     };
 
     getHistory = async () => {
