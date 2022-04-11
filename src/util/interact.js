@@ -1,4 +1,4 @@
-import {Route, Token, Fetcher, Trade, TokenAmount, Pair, Percent} from "@gambleswap/sdk";
+import {Route, Token, Fetcher, Trade, TokenAmount, Pair, Percent, TradeType} from "@gambleswap/sdk";
 // const { Fetcher } = require('@uniswap/sdk');
 var ethers = require('ethers');
 require("dotenv").config();
@@ -11,7 +11,7 @@ var provider = new ethers.providers.JsonRpcProvider(url);
 const web3 = new Web3(new Web3.providers.HttpProvider(url));
 
 const GMBContractABI = require("../abis/GMBToken-abi.json");
-const GMBContractAddress = "0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F";
+export const GMBContractAddress = "0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F";
 
 const GamblingContractABI = require("../abis/Gambling-abi.json");
 const GamblingContractAddress = "0x712516e61C8B383dF4A63CFe83d7701Bce54B03e";
@@ -21,6 +21,25 @@ const GambleswapRouterAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 const chainId = 31337;
 
+export const getAmount = async (token0, token1, type, value, slippage) => {
+	console.log(`before ${value}`);
+	var BN = web3.utils.BN;
+	const slippageTolerance = new Percent(`${slippage*100}`, "10000"); // 50 bips, or 0.50%
+	const RAD = await Fetcher.fetchTokenData(chainId, token0, provider);
+	const DNI = await Fetcher.fetchTokenData(chainId, token1, provider);
+	const pair = await Fetcher.fetchPairData(RAD, DNI, provider);
+	console.log(`${pair.reserve0.raw} ${pair.reserve1.raw}`)
+	let route = new Route([pair], RAD, DNI);
+	let trade =
+		type === TradeType.EXACT_INPUT ? new Trade(route, new TokenAmount(RAD, value), type, slippageTolerance)
+			:
+			new Trade(route, new TokenAmount(DNI, value), type, slippageTolerance);
+	const res = type === TradeType.EXACT_INPUT ? trade.minimumAmountOut(slippageTolerance).raw : trade.maximumAmountIn(slippageTolerance).raw
+	console.log(`what the hell ${res}`);
+	// console.log(`what the hell ${new BN(res)}`);
+	// console.log(`what the hell ${res.divn(10**18)}`);
+	return res
+};
 
 export const uniswapRoute = async (fromAddress, token0, token1, to, amount, type, slippage) => {
 
@@ -52,13 +71,17 @@ export const uniswapRoute = async (fromAddress, token0, token1, to, amount, type
 			)
 		}
 	}
-	console.log(allPairs);
-	let trade = Trade.bestTradeExactIn(
+	let trade = type === TradeType.EXACT_INPUT ?
+		Trade.bestTradeExactIn(
 		allPairs,
 		new TokenAmount(RAD, amount),
 		DNI
-	);
-	console.log(trade);
+	) : Trade.bestTradeExactOut(
+			allPairs,
+			new TokenAmount(RAD, amount),
+			DNI
+		);
+
 
 	const slippageTolerance = new Percent(`${slippage*100}`, "10000"); // 50 bips, or 0.50%
 	let path = [];
@@ -68,7 +91,9 @@ export const uniswapRoute = async (fromAddress, token0, token1, to, amount, type
 
 	const amountOutMin = trade[0].minimumAmountOut(slippageTolerance).raw; // needs to be converted to e.g. hex
 	const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
-	swapExactTokensForTokens(fromAddress, amount, amountOutMin, path, to, deadline)
+	type === TradeType.EXACT_INPUT ?
+	await swapExactTokensForTokens(fromAddress, amount, amountOutMin, path, to, deadline) : swapTokensForExactTokens(fromAddress, amount, amountOutMin, path, to, deadline)
+
 	// const value = trade.inputAmount.raw; // // needs to be converted to e.g. hex
 
 	// console.log(pair.token0Price)
@@ -94,7 +119,6 @@ export const GambleswapRouterContract = new web3.eth.Contract(
 );
 
 export const swapExactTokensForTokens = async (fromAddress, amount, amountOutMin, path, to, deadline) => {
-	console.log(`${fromAddress}, ${amount}, ${amountOutMin}, ${path}, ${to}, ${deadline}`);
 	//input error handling
 	if (!window.ethereum || fromAddress === null) {
 		return {
@@ -109,27 +133,25 @@ export const swapExactTokensForTokens = async (fromAddress, amount, amountOutMin
 		data: GambleswapRouterContract.methods.swapExactTokensForTokens(`${amount}`, `${amountOutMin}`, path, to, deadline).encodeABI(),
 	};
 
-	//sign the transaction
-	try {
-		const txHash = await window.ethereum.request({
-			method: "eth_sendTransaction",
-			params: [transactionParameters],
-		});
+	await signTrx(transactionParameters)
+};
+
+export const swapTokensForExactTokens = async (fromAddress, amount, amountOutMin, path, to, deadline) => {
+	//input error handling
+	if (!window.ethereum || fromAddress === null) {
 		return {
-			status: (
-				<span>
-					✅{" "}
-					<a target="_blank" href={`https://rinkeby.etherscan.io/tx/${txHash}`}>
-						View the status of your transaction on Etherscan!
-					</a>
-				</span>
-			),
-		};
-	} catch (error) {
-		return {
-			status: "😥 " + error.message,
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
 		};
 	}
+
+	const transactionParameters = {
+		to: GambleswapRouterAddress, // Required except during contract publications.
+		from: fromAddress, // must match user's active address.
+		data: GambleswapRouterContract.methods.swapTokensForExactTokens(`${amount}`, `${amountOutMin}`, path, to, deadline).encodeABI(),
+	};
+
+	await signTrx(transactionParameters)
 };
 
 export const loadCoveragePerGMB = async () => {
@@ -140,8 +162,12 @@ export const loadRoundNum = async () => {
 	return await GamblingContract.methods.getCurrentRound().call();
 };
 
-export const loadTokenAccountBalance = async (account) => {
-	const balance = await GMBTokenContract.methods.balanceOf(account).call();
+export const loadTokenAccountBalance = async (account, contractAddress) => {
+	const contract = new web3.eth.Contract(
+		GMBContractABI,
+		contractAddress
+	);
+	const balance = await contract.methods.balanceOf(account).call();
 	return balance;
 };
 
@@ -244,27 +270,8 @@ export const participate = async (fromAddress, betValue, gmbToken) => {
 		data: GamblingContract.methods.participate(gmbToken, betValue).encodeABI(),
 	};
 
-	//sign the transaction
-	try {
-		const txHash = await window.ethereum.request({
-			method: "eth_sendTransaction",
-			params: [transactionParameters],
-		});
-		return {
-			status: (
-				<span>
-					✅{" "}
-					<a target="_blank" href={`https://rinkeby.etherscan.io/tx/${txHash}`}>
-						View the status of your transaction on Etherscan!
-					</a>
-				</span>
-			),
-		};
-	} catch (error) {
-		return {
-			status: "😥 " + error.message,
-		};
-	}
+	await signTrx(transactionParameters)
+
 };
 
 export const claimPrize = async (fromAddress, gameNumber) => {
@@ -282,11 +289,16 @@ export const claimPrize = async (fromAddress, gameNumber) => {
 		data: GamblingContract.methods.claimPrize(gameNumber).encodeABI(),
 	};
 
+	await signTrx(transactionParameters)
+
+};
+
+const signTrx = async (params) => {
 	//sign the transaction
 	try {
 		const txHash = await window.ethereum.request({
 			method: "eth_sendTransaction",
-			params: [transactionParameters],
+			params: [params],
 		});
 		return {
 			status: (
@@ -303,7 +315,7 @@ export const claimPrize = async (fromAddress, gameNumber) => {
 			status: "😥 " + error.message,
 		};
 	}
-};
+}
 
 export const getGamesHistory = async (fromAddress, roundNum) => {
 	var history = new Array(roundNum);

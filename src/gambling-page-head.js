@@ -1,6 +1,7 @@
 import {
 	connectWallet,
 	loadTokenAccountBalance,
+	GMBContractAddress,
 	getCurrentWalletConnected,
 	loadCoveragePerGMB,
 	loadRoundNum,
@@ -43,7 +44,7 @@ class Header extends React.Component {
 
 	fetchData = async () => {
 		if (this.state.walletAddress !== "") {
-			const tokenBalance = await loadTokenAccountBalance(this.state.walletAddress);
+			const tokenBalance = await loadTokenAccountBalance(this.state.walletAddress, GMBContractAddress);
 			this.setTokenBalance(tokenBalance);
 		}
 		const { address, status } = await getCurrentWalletConnected();

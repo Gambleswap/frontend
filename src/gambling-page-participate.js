@@ -121,7 +121,8 @@ class Gambling extends React.Component {
 		this.interval = setInterval(() => this.fetchData(), 3000);
 	};
 
-	handleParticipation = async () => {
+	handleParticipation = async (e) => {
+		e.preventDefault();
 		await participate(this.state.walletAddress, this.state.betValue, this.state.gmbAmount);
 	};
 
