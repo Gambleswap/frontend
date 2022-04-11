@@ -103,12 +103,23 @@ class Swap extends React.Component {
 
     fetchBalances = async () => {
         var amount0, amount1;
-        if (this.state.fromToken !== "")
-            amount0 = (await loadTokenAccountBalance(this.state.walletAddress, this.state.fromToken))/10**18;
-        else amount0 = "";
+        if (this.state.fromToken !== "") {
+            try {
+                amount0 = (await loadTokenAccountBalance(this.state.walletAddress, this.state.fromToken)) / 10 ** 18;
+            } catch {
+                amount0 = ""
+            }
+        }
+        else
+            amount0 = "";
 
-        if (this.state.toToken !== "")
-            amount1 = (await loadTokenAccountBalance(this.state.walletAddress, this.state.toToken))/10**18;
+        if (this.state.toToken !== "") {
+            try {
+                amount1 = (await loadTokenAccountBalance(this.state.walletAddress, this.state.toToken)) / 10 ** 18;
+            } catch {
+                amount1 = ""
+            }
+        }
         else amount1 = "";
 
         this.setBalance(
