@@ -48,17 +48,21 @@ class History extends React.Component {
 
     componentDidMount = async () => {
         await this.fetchData();
-        this.interval = setInterval(() => this.fetchData(), 3000);
+        this.interval = setInterval(() => this.fetchData(), 2000);
     };
 
     fetchData = async () => {
-        this.addWalletListener();
-        const { address, status } = await getCurrentWalletConnected();
-        this.setWallet(address);
-        this.setStatus(status);
-        this.setGames(await this.getHistory());
-        const roundNum = await loadRoundNum();
-        this.setRoundNum(roundNum);
+        try {
+            this.addWalletListener();
+            const {address, status} = await getCurrentWalletConnected();
+            this.setWallet(address);
+            this.setStatus(status);
+            this.setGames(await this.getHistory());
+            const roundNum = await loadRoundNum();
+            this.setRoundNum(roundNum);
+        } catch (e) {
+
+        }
     };
 
     addWalletListener() {

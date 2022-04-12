@@ -84,7 +84,7 @@ class Header extends React.Component {
 	componentDidMount = async () => {
 		this.addWalletListener();
 		await this.fetchData();
-		this.interval = setInterval(() => this.fetchData(), 3000);
+		this.interval = setInterval(() => this.fetchData(), 2000);
 	};
 
 	walletStatusComponent = (addr) => {

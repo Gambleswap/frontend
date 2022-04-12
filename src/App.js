@@ -34,6 +34,7 @@ export function App() {
 					{/*</Route>*/}
 					<Route path="/swap" element={<SwapPage />}/>
 					<Route path="/gambling" element={<GamblingPage />} />
+					<Route path="/" element={<IndexHeader />} />
 					{/*<Route path="/">*/}
 					{/*	<Home />*/}
 					{/*</Route>*/}
@@ -41,6 +42,14 @@ export function App() {
 			</div>
 		</Router>
 	);
+}
+
+function IndexHeader() {
+	return (
+		<div height="56" className="sc-4cbab3e3-2 elkeBC">
+			<Header/>
+		</div>
+	)
 }
 
 function GamblingPage() {

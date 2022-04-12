@@ -5,7 +5,7 @@ import {
 import {TradeType} from "@gambleswap/sdk";
 import React from "react";
 import {getAmount, getCurrentWalletConnected, loadTokenAccountBalance} from "./util/interact";
-import $ from "jquery";
+// import {BigInt} from "big-integer"
 
 class Swap extends React.Component {
     constructor(props) {
@@ -132,8 +132,12 @@ class Swap extends React.Component {
     };
 
     fetchData = async () => {
-        const { address, status } = await getCurrentWalletConnected();
-        this.setWallet(address);
+        try {
+            const {address, status} = await getCurrentWalletConnected();
+            this.setWallet(address);
+        } catch (e) {
+
+        }
     };
 
 
@@ -194,10 +198,11 @@ class Swap extends React.Component {
             let amount2 = amount < 10 ? 0 : parseInt(await getAmount(this.state.fromToken, this.state.toToken, type,
                 `${amount}`
                 , 0.5));
+            // console.log(type(amount2));
 
             type === TradeType.EXACT_INPUT ?
                 this.setAmount({from: _amount, to: amount2/10**18}):
-                this.setAmount({from: amount2/10**18, to: _amount});
+                this.setAmount({from: Number(amount2/(10**18)), to: _amount});
         } catch (e) {
             this.setAmount({from: "", to: ""})
         }

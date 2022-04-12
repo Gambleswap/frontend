@@ -101,24 +101,28 @@ class Gambling extends React.Component {
 	}
 
 	fetchData = async () => {
-		this.addWalletListener();
-		await this.connectWalletPressed();
+		try {
+			this.addWalletListener();
+			await this.connectWalletPressed();
 
-		const coveragePerGMB = await loadCoveragePerGMB();
+			const coveragePerGMB = await loadCoveragePerGMB();
 
-		this.setCoveragePerGMB(coveragePerGMB);
+			this.setCoveragePerGMB(coveragePerGMB);
 
-		const roundNum = await loadRoundNum();
+			const roundNum = await loadRoundNum();
 
-		this.setRoundNum(roundNum);
-		console.log(await getCurrentRound(this.state.walletAddress, roundNum));
-		this.setCurrentRoundState(await getCurrentRound(this.state.walletAddress, roundNum));
+			this.setRoundNum(roundNum);
+			console.log(await getCurrentRound(this.state.walletAddress, roundNum));
+			this.setCurrentRoundState(await getCurrentRound(this.state.walletAddress, roundNum));
+		} catch (e) {
+
+		}
 
 	};
 
 
 	componentDidMount = async () => {
-		this.interval = setInterval(() => this.fetchData(), 3000);
+		this.interval = setInterval(() => this.fetchData(), 2000);
 	};
 
 	handleParticipation = async (e) => {
@@ -148,7 +152,7 @@ class Gambling extends React.Component {
 											<div fontSize="12px" color="textSubtle"
 												 className="sc-be365e-0 dmGxwu">Total Jackpot Value
 											</div>
-											<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH">
+											<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH" style={{"margin-left": "10px"}}>
 												<div color="text"
 													 className="sc-be365e-0 krVkBZ">{this.state.currentRoundState ? this.state.currentRoundState.totalJackpotVal : "N/A"}</div>
 											</div>
@@ -157,7 +161,7 @@ class Gambling extends React.Component {
 											<div fontSize="12px" color="textSubtle"
 												 className="sc-be365e-0 dmGxwu">Round number
 											</div>
-											<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH">
+											<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH" style={{"margin-left": "10px"}}>
 												<div color="text"
 													 className="sc-be365e-0 krVkBZ">{this.state.roundNum}</div>
 											</div>
@@ -166,7 +170,7 @@ class Gambling extends React.Component {
 											<div fontSize="12px" color="textSubtle"
 												 className="sc-be365e-0 dmGxwu">GMB Coverage
 											</div>
-											<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH">
+											<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH" style={{"margin-left": "10px"}}>
 												<div color="text"
 													 className="sc-be365e-0 krVkBZ">{this.state.coveragePerGMB.slice(0, -12)}</div>
 											</div>
