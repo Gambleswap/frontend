@@ -123,14 +123,16 @@ function ApprovalPage() {
 			<hr/>
 			<div className="container">
 				<div className="row justify-content-center" style={{marginTop: "50px"}}>
-					<div className="col-md-6 App">
+					<div className="col-md-12 App">
 						<GMBApproval />
 					</div>
-					<div className="col-md-6 App">
+				</div>
+				<hr></hr>
+				<div className="row justify-content-center">
+					<div className="col-md-12 App">
 						<LPApproval />
 					</div>
 				</div>
-				{/* <hr/> */}
 			</div>
 		</>
 	);
