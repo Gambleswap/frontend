@@ -19,6 +19,8 @@ const GamblingContractAddress = "0x712516e61C8B383dF4A63CFe83d7701Bce54B03e";
 const GambleswapRouterABI = require("../abis/GambleswapRouter-abi.json");
 const GambleswapRouterAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
+const ERC20ABI = require("../abis/ERC20-abi.json");
+
 const chainId = 31337;
 
 export const getAmount = async (token0, token1, type, value, slippage) => {
@@ -338,3 +340,81 @@ export const getCurrentRound = async (fromAddress, roundNum) => {
 	data['yourBet'] = gameHistory.userGMB;
 	return data
 };
+
+export const getApprovedGMB = async (fromAddress) => {
+	return await GMBTokenContract.methods.allowance(fromAddress, GamblingContractAddress).call();
+};
+
+export const getApprovedLP = async (fromAddress, pairAddr) => {
+	const contract = new web3.eth.Contract(
+		ERC20ABI,
+		pairAddr
+	);
+	return await contract.methods.allowance(fromAddress, GamblingContractAddress).call();
+};
+
+export const getAuthorizedPairs = async () => {
+	let poolLength = await GMBTokenContract.methods.getAuthorisedPoolsLength().call();
+	let poolAddrs = []
+	for (let i = 0; i < poolLength; i++) {
+		let poolAddr = await GMBTokenContract.methods.authorisedPools(i).call();
+		poolAddrs.push(poolAddr)
+	}
+	return poolAddrs;
+};
+
+export const gmbApproval = async (fromAddress, gmbToken) => {
+	//input error handling
+	if (!window.ethereum || fromAddress === null) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	if (gmbToken.trim() === "") {
+		return {
+			status: "❌ Your message cannot be an empty string.",
+		};
+	}
+
+	const transactionParameters = {
+		to: GMBContractAddress, // Required except during contract publications.
+		from: fromAddress, // must match user's active address.
+		data: GMBTokenContract.methods.approve(GamblingContractAddress, gmbToken).encodeABI(),
+	};
+
+	await signTrx(transactionParameters)
+
+};
+
+export const lpApproval = async (fromAddress, pairAddr, lpToken) => {
+	//input error handling
+	if (!window.ethereum || fromAddress === null || pairAddr === null) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	if (lpToken.trim() === "") {
+		return {
+			status: "❌ Your message cannot be an empty string.",
+		};
+	}
+
+	const contract = new web3.eth.Contract(
+		ERC20ABI,
+		pairAddr
+	);
+
+	const transactionParameters = {
+		to: pairAddr, // Required except during contract publications.
+		from: fromAddress, // must match user's active address.
+		data: contract.methods.approve(GamblingContractAddress, lpToken).encodeABI(),
+	};
+
+	await signTrx(transactionParameters)
+
+};
+
