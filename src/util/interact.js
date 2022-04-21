@@ -1,4 +1,6 @@
 import {Route, Token, Fetcher, Trade, TokenAmount, Pair, Percent, TradeType} from "@gambleswap/sdk";
+import { ToastContainer, toast } from 'react-toastify';
+
 // const { Fetcher } = require('@uniswap/sdk');
 var ethers = require('ethers');
 require("dotenv").config();
@@ -264,7 +266,7 @@ export const participate = async (fromAddress, betValue, gmbToken) => {
 		from: fromAddress, // must match user's active address.
 		data: GamblingContract.methods.participate(gmbToken, betValue).encodeABI(),
 	};
-
+	
 	await signTrx(transactionParameters)
 
 };
@@ -284,8 +286,7 @@ export const claimPrize = async (fromAddress, gameNumber) => {
 		data: GamblingContract.methods.claimPrize(gameNumber).encodeABI(),
 	};
 
-	await signTrx(transactionParameters)
-
+	await signTrx(transactionParameters);
 };
 
 const signTrx = async (params) => {
@@ -295,19 +296,23 @@ const signTrx = async (params) => {
 			method: "eth_sendTransaction",
 			params: [params],
 		});
+		toast.success("transaction sent to the network successfully");
 		return {
 			status: (
-				<span>
-					✅{" "}
-					<a target="_blank" href={`https://rinkeby.etherscan.io/tx/${txHash}`}>
-						View the status of your transaction on Etherscan!
-					</a>
-				</span>
+				txHash
 			),
 		};
 	} catch (error) {
+		if (error.message.includes("outputs from RPC")) {
+			let errorMsg = error.message.split("outputs from RPC ")[1];
+			console.log(errorMsg.slice(1, -1))
+			let errorObj = JSON.parse(errorMsg.slice(1, -1));
+			toast.error(errorObj.value.data.message);
+		}
+		else
+			toast.error(error.message);
 		return {
-			status: "😥 " + error.message,
+			status: error.message,
 		};
 	}
 }

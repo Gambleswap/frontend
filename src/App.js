@@ -1,3 +1,6 @@
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
+
 import Gambling from "./gambling-page-participate";
 import Header from "./gambling-page-head";
 import History from "./gambling-page-history";
@@ -42,6 +45,7 @@ export function App() {
 					{/*	<Home />*/}
 					{/*</Route>*/}
 				</Routes>
+				<ToastContainer />
 			</div>
 		</Router>
 	);
