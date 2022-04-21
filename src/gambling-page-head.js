@@ -149,6 +149,14 @@ class Header extends React.Component {
 								</Link>
 						</button>
 					</div>
+					<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC fOPopv" style={{"margin-right": "10px"}}>
+						<button className="sc-95d8b156-0 iEdSHP sc-a97aa614-0 jMtDSu" scale="sm"
+								id="open-settings-dialog-button">
+								<Link to="/approve">
+									<img src="https://img.icons8.com/nolan/64/approve.png" width={50}/>
+								</Link>
+						</button>
+					</div>
 					<div height="100%" className="sc-c4ec0fdf-0 sc-32d5f017-0 jGvODc chfQFH">
 						<div className="sc-c4ec0fdf-0 sc-32d5f017-0 sc-28c9ece7-0 dGKbaC fOPopv bJVlVi wallet">
 							<div className="sc-194ed783-0 ifVMjR wallet-img">

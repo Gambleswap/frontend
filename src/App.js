@@ -1,7 +1,12 @@
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
+
 import Gambling from "./gambling-page-participate";
 import Header from "./gambling-page-head";
 import History from "./gambling-page-history";
 import Swap from "./swap-page-swap";
+import GMBApproval from "./approval-page-gmb"
+import LPApproval from "./approval-page-lp"
 import "./App.css";
 import React from "react";
 import {
@@ -34,21 +39,42 @@ export function App() {
 					{/*</Route>*/}
 					<Route path="/swap" element={<SwapPage />}/>
 					<Route path="/gambling" element={<GamblingPage />} />
-					<Route path="/" element={<IndexHeader />} />
+					<Route path="/" element={<IndexPage />} />
+					<Route path="/approve" element={<ApprovalPage />} />
 					{/*<Route path="/">*/}
 					{/*	<Home />*/}
 					{/*</Route>*/}
 				</Routes>
+				<ToastContainer />
 			</div>
 		</Router>
 	);
 }
 
-function IndexHeader() {
+function IndexPage() {
 	return (
-		<div height="56" className="sc-4cbab3e3-2 elkeBC">
-			<Header/>
-		</div>
+		<>
+			<div height="56" className="sc-4cbab3e3-2 elkeBC">
+				<Header/>
+			</div>
+			<div className="container">
+				<div className="row">
+					<div className="col-md-3" style={{"margin-top": "330px"}}>
+						<Link to="/swap">
+							<img src="https://img.icons8.com/nolan/96/replace.png" width={130}/>
+						</Link>
+					</div>
+					<div className="col-md-6">
+						<img src="https://i.ibb.co/CshX8s7/gambleswap.png" alt="gambleswap" border="0" style={{"margin-top": "250px", "width": "300px", "opacity": "0.5"}}></img>
+					</div>
+					<div className="col-md-3" style={{"margin-top": "330px"}}>
+						<Link to="/gambling">
+							<img src="https://img.icons8.com/nolan/96/dice.png" width={130}/>
+						</Link>
+					</div>
+				</div>
+			</div>
+		</>
 	)
 }
 
@@ -91,4 +117,29 @@ function SwapPage() {
 		</>
 	);
 }
+
+function ApprovalPage() {
+	return (
+		<>
+			<div height="56" className="sc-4cbab3e3-2 elkeBC">
+				<Header/>
+			</div>
+			<hr/>
+			<div className="container">
+				<div className="row justify-content-center" style={{marginTop: "50px"}}>
+					<div className="col-md-12 App">
+						<GMBApproval />
+					</div>
+				</div>
+				<hr></hr>
+				<div className="row justify-content-center">
+					<div className="col-md-12 App">
+						<LPApproval />
+					</div>
+				</div>
+			</div>
+		</>
+	);
+}
+
 
