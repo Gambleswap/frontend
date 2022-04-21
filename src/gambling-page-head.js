@@ -5,7 +5,9 @@ import {
 	getCurrentWalletConnected,
 	loadCoveragePerGMB,
 	loadRoundNum,
+    toEther,
 } from "./util/interact.js";
+
 
 import React from "react";
 import {Link} from "react-router-dom";
@@ -97,7 +99,13 @@ class Header extends React.Component {
 							<div className="sc-c4ec0fdf-0 iXqCiO">
 								<div className="sc-c4ec0fdf-0 dGKbaC">
 									<div className="sc-40beb420-0 iPIHoo">
-										<span className="sc-a01cb22d-0 bWjWCf sc-40beb420-1 LIvgw">{this.state.tokenBalance} $GMB</span>
+										<span className="sc-a01cb22d-0 bWjWCf sc-40beb420-1 LIvgw">{
+										    this.state.tokenBalance !== ""
+                                                ?
+                                                toEther(this.state.tokenBalance)
+                                                :
+                                                ""
+										} $GMB</span>
 									</div>
 								</div>
 							</div>

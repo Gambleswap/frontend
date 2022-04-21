@@ -1,4 +1,4 @@
-import {claimPrize, getCurrentWalletConnected, getGamesHistory, loadRoundNum,} from "./util/interact.js";
+import {claimPrize, getCurrentWalletConnected, getGamesHistory, loadRoundNum, toEther, toWei} from "./util/interact.js";
 
 import React from "react";
 
@@ -121,7 +121,10 @@ class History extends React.Component {
                                                          className="sc-be365e-0 dmGxwu">Prize
                                                     </div>
                                                     <div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH">
-                                                        <div color="text" className="sc-be365e-0 krVkBZ">{game.amount}</div>
+                                                        <div color="text" className="sc-be365e-0 krVkBZ">{
+                                                            game.amount !== "" && game.amount
+                                                                ? toEther(game.amount) : ""
+                                                        }</div>
                                                     </div>
                                                 </div>
                                                 <div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC jdlnRz">
@@ -129,7 +132,10 @@ class History extends React.Component {
                                                          className="sc-be365e-0 dmGxwu">Total Jackpot Value
                                                     </div>
                                                     <div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH">
-                                                        <div color="text" className="sc-be365e-0 krVkBZ">{game.totalJackpotVal}</div>
+                                                        <div color="text" className="sc-be365e-0 krVkBZ">{
+                                                            game.totalJackpotVal !== "" && game.totalJackpotVal
+                                                                ? toEther(game.totalJackpotVal) : ""
+                                                        }</div>
                                                     </div>
                                                 </div>
                                                 <div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC jdlnRz">
@@ -161,7 +167,10 @@ class History extends React.Component {
                                                          className="sc-be365e-0 dmGxwu">Your Amount of Bet
                                                     </div>
                                                     <div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH">
-                                                        <div color="text" className="sc-be365e-0 krVkBZ">{game.yourBet}</div>
+                                                        <div color="text" className="sc-be365e-0 krVkBZ">{
+                                                            game.yourBet !== "" && game.yourBet
+                                                                ? toEther(game.yourBet) : ""
+                                                        }</div>
                                                     </div>
                                                 </div>
                                                 <div>

@@ -1,6 +1,8 @@
 import {
 	connectWallet,
 	participate,
+	toEther,
+	toWei,
 } from "./util/interact.js";
 
 import React from "react";
@@ -127,7 +129,7 @@ class Gambling extends React.Component {
 
 	handleParticipation = async (e) => {
 		e.preventDefault();
-		await participate(this.state.walletAddress, this.state.betValue, this.state.gmbAmount);
+		await participate(this.state.walletAddress, this.state.betValue, toWei(this.state.gmbAmount));
 	};
 
 
@@ -154,7 +156,9 @@ class Gambling extends React.Component {
 											</div>
 											<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH" style={{"margin-left": "10px"}}>
 												<div color="text"
-													 className="sc-be365e-0 krVkBZ">{this.state.currentRoundState ? this.state.currentRoundState.totalJackpotVal : "N/A"}</div>
+													 className="sc-be365e-0 krVkBZ">
+													{this.state.currentRoundState && this.state.currentRoundState.totalJackpotVal
+														? toEther(this.state.currentRoundState.totalJackpotVal) : "N/A"}</div>
 											</div>
 										</div>
 										<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC jdlnRz">
@@ -172,7 +176,9 @@ class Gambling extends React.Component {
 											</div>
 											<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH" style={{"margin-left": "10px"}}>
 												<div color="text"
-													 className="sc-be365e-0 krVkBZ">{this.state.coveragePerGMB.slice(0, -12)}</div>
+													 className="sc-be365e-0 krVkBZ">
+													{this.state.coveragePerGMB}
+												</div>
 											</div>
 										</div>
 										{
@@ -193,7 +199,10 @@ class Gambling extends React.Component {
 														</div>
 														<div className="sc-c4ec0fdf-0 sc-32d5f017-0 dGKbaC chfQFH">
 															<div color="text"
-																 className="sc-be365e-0 krVkBZ">{this.state.currentRoundState.yourBet}</div>
+																 className="sc-be365e-0 krVkBZ">
+																{this.state.currentRoundState &&
+																this.state.currentRoundState.yourBet !== "" ? toEther(this.state.currentRoundState.yourBet) : ""}
+															</div>
 														</div>
 													</div>
 												</>

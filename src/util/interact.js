@@ -242,6 +242,14 @@ export const getCurrentWalletConnected = async () => {
 	}
 };
 
+export const toEther = (amount) => {
+	return parseFloat(ethers.utils.formatEther(amount)).toPrecision(5)
+};
+
+export const toWei = (amount) => {
+	return ethers.utils.parseEther(amount).toString()
+};
+
 export const participate = async (fromAddress, betValue, gmbToken) => {
 	//input error handling
 	if (!window.ethereum || fromAddress === null) {
