@@ -13,13 +13,13 @@ var provider = new ethers.providers.JsonRpcProvider(url);
 const web3 = new Web3(new Web3.providers.HttpProvider(url));
 
 const GMBContractABI = require("../abis/GMBToken-abi.json");
-export const GMBContractAddress = "0x948B3c65b89DF0B4894ABE91E6D02FE579834F8F";
+export const GMBContractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 const GamblingContractABI = require("../abis/Gambling-abi.json");
-const GamblingContractAddress = "0x712516e61C8B383dF4A63CFe83d7701Bce54B03e";
+const GamblingContractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 const GambleswapRouterABI = require("../abis/GambleswapRouter-abi.json");
-const GambleswapRouterAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+const GambleswapRouterAddress = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853";
 
 const ERC20ABI = require("../abis/ERC20-abi.json");
 
@@ -272,7 +272,7 @@ export const participate = async (fromAddress, betValue, gmbToken) => {
 	const transactionParameters = {
 		to: GamblingContractAddress, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
-		data: GamblingContract.methods.participate(gmbToken, betValue).encodeABI(),
+		data: GamblingContract.methods.participate(gmbToken, betValue, false).encodeABI(),
 	};
 	
 	await signTrx(transactionParameters)
