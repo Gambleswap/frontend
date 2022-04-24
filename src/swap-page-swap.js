@@ -17,8 +17,17 @@ class Swap extends React.Component {
             to: "",
             type: "",
             amount: {from: "", to: ""},
-            balance: {token0: "", token1: ""}
+            balance: {token0: "", token1: ""},
+            slippage: "0.5"
         };
+    }
+
+    setSlippage(_new) {
+        this.setState(state => {
+            let {slippage, ...remaining} = state;
+            remaining.slippage = _new;
+            return remaining
+        })
     }
 
     setBalance(_new) {
@@ -135,6 +144,7 @@ class Swap extends React.Component {
         try {
             const {address, status} = await getCurrentWalletConnected();
             this.setWallet(address);
+            await setInterval(() => this.fetchBalances(), 1000);
         } catch (e) {
 
         }
@@ -145,7 +155,6 @@ class Swap extends React.Component {
         this.addWalletListener();
         await this.connectWalletPressed();
         await this.fetchData();
-        this.interval = setInterval(() => this.fetchBalances(), 1000);
     };
 
 
@@ -156,6 +165,14 @@ class Swap extends React.Component {
     };
 
     handleSwap = async (e) => {
+        let slippage;
+
+        try {
+            slippage = parseFloat(this.state.slippage)
+        } catch (e) {
+            slippage = 0.5
+        }
+
         e.preventDefault();
         // const RAD = "0x8464135c8F25Da09e49BC8782676a84730C318bC";
         // const DNI = "0x71C95911E9a5D330f4D621842EC243EE1343292e";
@@ -167,11 +184,24 @@ class Swap extends React.Component {
             this.state.walletAddress,
             this.state.type === TradeType.EXACT_INPUT ? this.state.amount.from*10**18 : this.state.amount.to*10**18,
             this.state.type,
-            0.5
+            slippage
         );
     };
 
+    handleSlippageChange = async (amount) => {
+      this.setSlippage(amount)
+    };
+
     handleAmountChange = async (type, _amount) => {
+
+        let slippage;
+
+        try {
+            slippage = parseFloat(this.state.slippage)
+        } catch (e) {
+            slippage = 0.5
+        }
+
         if (this.state.fromToken === "" || this.state.toToken === "")
             return;
         if (_amount === "") {
@@ -197,14 +227,15 @@ class Swap extends React.Component {
         try {
             let amount2 = amount < 10 ? 0 : parseInt(await getAmount(this.state.fromToken, this.state.toToken, type,
                 `${amount}`
-                , 0.5));
+                , slippage));
             // console.log(type(amount2));
 
             type === TradeType.EXACT_INPUT ?
                 this.setAmount({from: _amount, to: amount2/10**18}):
                 this.setAmount({from: Number(amount2/(10**18)), to: _amount});
         } catch (e) {
-            this.setAmount({from: "", to: ""})
+            this.setAmount({from: "", to: ""});
+            console.log(e)
         }
         this.setType(type);
     };
@@ -235,6 +266,12 @@ class Swap extends React.Component {
                                     <div style={{display: "table-cell", width: "10%"}}>
                                         <span>{this.state.balance.token0}</span>
                                     </div>
+                                    {/*<div style={{display: "table-cell", width: "5%"}}>*/}
+                                    {/*    <input className="input100" type="text" name="fromAmount"*/}
+                                    {/*           value={this.state.amount.from}*/}
+                                    {/*           // onChange={(e) => this.handleAmountChange(TradeType.EXACT_INPUT, e.target.value)}*/}
+                                    {/*           placeholder="400"/>*/}
+                                    {/*</div>*/}
 
                                     {/*<span className="focus-input100"></span>*/}
                                     {/*<span className="symbol-input100">*/}
@@ -274,7 +311,48 @@ class Swap extends React.Component {
                             {/*</div>*/}
                             <div className="container-login100-form-btn p-t-10">
                                 <input className="btn" value="Swap" type="submit"/>
+                                <div
+                                    style={{position: "relative"}}
+                                >
+                                    {/*<div style={{position: 'fixed'}}>*/}
+                                    <div style={{
+
+                                        position: "absolute",
+                                        top: "0",
+                                        // right: "50px",
+                                        width: "250px",
+                                        // zIndex: 9500,
+                                        // transform: "rotate(-90deg)",
+                                    }}
+                                         className="m-b-10">
+                                        <div style={{display: "table-cell", width: "30%", "font-size": "10px"}}>
+                                            Slippage:
+                                            <input type="text" name="slippage"
+                                                   style = {{
+                                                       "margin-left": "5px",
+                                                       "background-color": "#c000ff17",
+                                                       "border-radius": "3px",
+                                                       "width": "12%",
+                                                       "padding": "0 2px 0 2px",
+                                                       "margin-right": "0px",
+                                                   }}
+                                                value={this.state.slippage}
+                                                onChange={(e) => this.handleSlippageChange(e.target.value)}
+                                                   placeholder="0.5"/> %
+                                        </div>
+                                    </div>
+                                    {/*<div style={{display: "table-cell"}}>*/}
+                                    {/*    <input className="input100" type="text" name="toAmount"*/}
+                                    {/*           value={this.state.amount.to}*/}
+                                    {/*           onChange={(e) => this.handleAmountChange(TradeType.EXACT_OUTPUT, e.target.value)}*/}
+                                    {/*           placeholder="0"/>*/}
+                                    {/*</div>*/}
+
+                                    {/*</div>*/}
+                                </div>
+
                             </div>
+                            {/*</div>*/}
                         </form>
                     </div>
                 </div>

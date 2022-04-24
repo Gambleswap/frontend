@@ -37,6 +37,7 @@ export const getAmount = async (token0, token1, type, value, slippage) => {
 			:
 			new Trade(route, new TokenAmount(DNI, value), type, slippageTolerance);
 	const res = type === TradeType.EXACT_INPUT ? trade.minimumAmountOut(slippageTolerance).raw : trade.maximumAmountIn(slippageTolerance).raw
+	console.log(res);
 	return res
 };
 
