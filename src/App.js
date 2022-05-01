@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import Gambling from "./gambling-page-participate";
 import Header from "./gambling-page-head";
 import History from "./gambling-page-history";
+import Lending from "./lending-page";
 import Swap from "./swap-page-swap";
 import GMBApproval from "./approval-page-gmb"
 import LPApproval from "./approval-page-lp"
@@ -39,6 +40,7 @@ export function App() {
 					{/*</Route>*/}
 					<Route path="/swap" element={<SwapPage />}/>
 					<Route path="/gambling" element={<GamblingPage />} />
+					<Route path="/lending" element={<LendingPage />} />
 					<Route path="/" element={<IndexPage />} />
 					<Route path="/approve" element={<ApprovalPage />} />
 					{/*<Route path="/">*/}
@@ -94,6 +96,26 @@ function GamblingPage() {
 			</div>
 			<hr/>
 			<History />
+		</>
+	);
+}
+
+function LendingPage() {
+	return (
+		<>
+			<div height="56" className="sc-4cbab3e3-2 elkeBC">
+				<Header/>
+			</div>
+			<hr/>
+			<div className="container">
+				<div className="row justify-content-center" style={{marginTop: "50px"}}>
+					<div className="col-md-8 App">
+						<Lending />
+					</div>
+				</div>
+			</div>
+			{/*<hr/>*/}
+			{/*<History />*/}
 		</>
 	);
 }

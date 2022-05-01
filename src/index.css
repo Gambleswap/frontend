@@ -784,3 +784,78 @@ iframe {
 	fill: rgb(122, 110, 170);
 	flex-shrink: 0;
 }
+
+
+.toggle {
+	align-items: center;
+	border-radius: 100px;
+	display: flex;
+	font-size: 10px;
+	margin-left: 20px;
+	color: rgb(122, 110, 170);
+}
+.toggle__input {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	margin-right: 5px;
+	width: 1px;
+}
+.toggle__input:not([disabled]):active + .toggle-track, .toggle__input:not([disabled]):focus + .toggle-track {
+	border: 1px solid transparent;
+	box-shadow: 0px 0px 0px 2px #000 0%;
+}
+.toggle__input:disabled + .toggle-track {
+	cursor: not-allowed;
+	opacity: 0.7;
+}
+.toggle-track {
+	background: #bea2ef;
+	border: 1px solid #000 100%;
+	border-radius: 100px;
+	cursor: pointer;
+	display: flex;
+	height: 15px;
+	margin-right: 12px;
+	position: relative;
+	width: 30px;
+}
+.toggle-indicator {
+	align-items: center;
+	background: #feecf7 0%;
+	border-radius: 12px;
+	bottom: 1px;
+	top: 1px;
+	display: flex;
+	height: 12px;
+	justify-content: center;
+	left: 1px;
+	right: 1px;
+	outline: solid 2px transparent;
+	position: absolute;
+	transition: 0.5s;
+	width: 12px;
+}
+.checkMark {
+	fill: #fff;
+	height: 20px;
+	width: 20px;
+	opacity: 0;
+	transition: opacity 0.5s ease-in-out;
+}
+.toggle__input:checked + .toggle-track .toggle-indicator {
+	background: #e6b47c 0%;
+	transform: translateX(13px);
+}
+.toggle__input:checked + .toggle-track .toggle-indicator .checkMark {
+	opacity: 1;
+	transition: opacity 0.5s ease-in-out;
+}
+@media screen and (-ms-high-contrast: active) {
+	.toggle-track {
+		border-radius: 0;
+	}
+}
