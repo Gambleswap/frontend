@@ -134,7 +134,7 @@ class Gambling extends React.Component {
 
 
 	componentDidMount = async () => {
-		this.interval = setInterval(() => this.fetchData(), 2000);
+		this.interval = setInterval(() => this.fetchData(), 3000);
 	};
 
 	handleParticipation = async (e) => {
@@ -241,8 +241,8 @@ class Gambling extends React.Component {
 
 												<span className="focus-input100"></span>
 												<span className="symbol-input100">
-											<i className="fa fa-user"></i>
-										</span>
+													<i className="fa fa-user"></i>
+												</span>
 											</div>
 											<div className="wrap-input100 validate-input m-b-10"
 												 data-validate="Amount is required">

@@ -48,7 +48,7 @@ class History extends React.Component {
 
     componentDidMount = async () => {
         await this.fetchData();
-        this.interval = setInterval(() => this.fetchData(), 2000);
+        this.interval = setInterval(() => this.fetchData(), 3000);
     };
 
     fetchData = async () => {

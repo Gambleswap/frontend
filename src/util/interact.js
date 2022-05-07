@@ -186,6 +186,41 @@ export const loadRoundNum = async () => {
 	return await GamblingContract.methods.getCurrentRound().call();
 };
 
+export const loadLPTokenAccountBalance = async (account, token0, token1) => {
+	const RAD = await Fetcher.fetchTokenData(chainId, token0, provider);
+	const DNI = await Fetcher.fetchTokenData(chainId, token1, provider);
+	const pair = await Fetcher.fetchPairData(RAD, DNI, provider);
+	const contract = new web3.eth.Contract(
+		GMBContractABI,
+		pair.liquidityToken.address
+	);
+	return await contract.methods.balanceOf(account).call();
+};
+
+export const removeLiquidity = async (account, token0, token1, liquidity) => {
+	//input error handling
+	if (!window.ethereum || account === null) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	let now = new Date();
+
+	// tomorrow date
+	let tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1);
+	console.log(account, token0, token1, liquidity, tomorrow.valueOf()/1000);
+
+	const transactionParameters = {
+		to: GambleswapRouterAddress, // Required except during contract publications.
+		from: account, // must match user's active address.
+		data: GambleswapRouterContract.methods.removeLiquidity(`${token0}`, `${token1}`, `${liquidity}`, 0, 0, account, `${tomorrow.valueOf()/1000}`).encodeABI(),
+	};
+
+	await signTrx(transactionParameters)
+};
+
 export const loadTokenAccountBalance = async (account, contractAddress) => {
 	const contract = new web3.eth.Contract(
 		GMBContractABI,
