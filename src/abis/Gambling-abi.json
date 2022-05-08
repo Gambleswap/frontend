@@ -74,14 +74,19 @@
         "internalType": "address",
         "name": "user",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "lpAddr",
+        "type": "address"
       }
     ],
     "name": "checkLPToken",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "bool",
         "name": "",
-        "type": "address"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -430,6 +435,11 @@
         "internalType": "uint256",
         "name": "betValue",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "choosenLpAddr",
+        "type": "address"
       },
       {
         "internalType": "bool",

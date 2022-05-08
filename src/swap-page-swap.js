@@ -1,5 +1,8 @@
 import {
     connectWallet,
+    GambleswapRouterAddress,
+    getApprovedToken,
+    tokenApproval,
     uniswapRoute,
 } from "./util/interact.js";
 import {TradeType} from "@gambleswap/sdk";
@@ -18,7 +21,9 @@ class Swap extends React.Component {
             type: "",
             amount: {from: "", to: ""},
             balance: {token0: "", token1: ""},
-            slippage: "0.5"
+            slippage: "0.5",
+            fromTokenAllowance: "",
+            toTokenAllowance: "",
         };
     }
 
@@ -86,6 +91,22 @@ class Swap extends React.Component {
         })
     }
 
+    setFromTokenAllowance(_new) {
+        this.setState(state => {
+            let {fromTokenAllowance, ...remaining} = state;
+            remaining.fromTokenAllowance = _new;
+            return remaining;
+        })
+    }
+
+    setToTokenAllowance(_new) {
+        this.setState(state => {
+            let {toTokenAllowance, ...remaining} = state;
+            remaining.toTokenAllowance = _new;
+            return remaining;
+        })
+    }
+
     addWalletListener() {
         if (window.ethereum) {
             window.ethereum.on("accountsChanged", (accounts) => {
@@ -111,33 +132,38 @@ class Swap extends React.Component {
     }
 
     fetchBalances = async () => {
-        var amount0, amount1;
-        if (this.state.fromToken !== "") {
-            try {
-                amount0 = (await loadTokenAccountBalance(this.state.walletAddress, this.state.fromToken)) / 10 ** 18;
-            } catch {
-                amount0 = ""
+        try {
+            var amount0, amount1;
+            if (this.state.fromToken !== "") {
+                this.setFromTokenAllowance(await getApprovedToken(this.state.walletAddress, this.state.fromToken, GambleswapRouterAddress))
+                try {
+                    amount0 = (await loadTokenAccountBalance(this.state.walletAddress, this.state.fromToken)) / 10 ** 18;
+                } catch {
+                    amount0 = ""
+                }
             }
+            else
+                amount0 = "";
+    
+            if (this.state.toToken !== "") {
+                this.setToTokenAllowance(await getApprovedToken(this.state.walletAddress, this.state.toToken, GambleswapRouterAddress))
+                try {
+                    amount1 = (await loadTokenAccountBalance(this.state.walletAddress, this.state.toToken)) / 10 ** 18;
+                } catch {
+                    amount1 = ""
+                }
+            }
+            else amount1 = "";
+        
+            this.setBalance(
+                {
+                    token0: amount0,
+                    token1: amount1
+                }
+            )    
+        } catch (e) {
+
         }
-        else
-            amount0 = "";
-
-        if (this.state.toToken !== "") {
-            try {
-                amount1 = (await loadTokenAccountBalance(this.state.walletAddress, this.state.toToken)) / 10 ** 18;
-            } catch {
-                amount1 = ""
-            }
-        }
-        else amount1 = "";
-
-        this.setBalance(
-            {
-                token0: amount0,
-                token1: amount1
-            }
-        )
-
     };
 
     fetchData = async () => {
@@ -186,6 +212,16 @@ class Swap extends React.Component {
             this.state.type,
             slippage
         );
+    };
+
+    handleFromTokenApproval = async (e) => {
+        e.preventDefault();
+        await tokenApproval(this.state.walletAddress, this.state.fromToken, '9999999999999999999999999999999999999999', GambleswapRouterAddress)
+    };
+      
+    handleToTokenApproval = async (e) => {
+        e.preventDefault();
+        await tokenApproval(this.state.walletAddress, this.state.toToken, '9999999999999999999999999999999999999999', GambleswapRouterAddress)
     };
 
     handleSlippageChange = async (amount) => {
@@ -310,7 +346,15 @@ class Swap extends React.Component {
                             {/*    </span>*/}
                             {/*</div>*/}
                             <div className="container-login100-form-btn p-t-10">
-                                <input className="btn" value="Swap" type="submit"/>
+                                {this.state.fromTokenAllowance !== "" && this.state.fromTokenAllowance <=0 ?
+                                <button className="btn" type="button" value="Approve From Token" onClick={this.handleFromTokenApproval}>Approve First Token</button> :
+                                    <div>
+                                        {this.state.toTokenAllowance !== "" && this.state.toTokenAllowance <=0 ?
+                                            <button className="btn" type="button" value="Approve To Token" onClick={this.handleToTokenApproval}>Approve Second Token</button> :
+                                            <input className="btn" value="Swap" type="submit"/>
+                                        }
+                                    </div>
+                                }
                                 <div
                                     style={{position: "relative"}}
                                 >

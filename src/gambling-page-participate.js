@@ -1,7 +1,12 @@
 import {
 	connectWallet,
+	GamblingContractAddress,
+	getApprovedToken,
+	getAuthorizedPairs,
+	gmbApproval,
 	participate,
 	toEther,
+	tokenApproval,
 	toWei,
 } from "./util/interact.js";
 
@@ -18,9 +23,53 @@ class Gambling extends React.Component {
 			status: "",
 			coveragePerGMB: "",
 			roundNum: "",
+			pairAddr: "",
+			authorizedPairs: [],
 			currentRoundState: {},
+			approvedLP: "",
 			borrow: false
 		};
+	}
+
+	setApprovedLP(_new) {
+		this.setState(state => {
+			let {authorizedPairs, ...remaining} = state;
+			remaining.approvedLP = _new;
+			return remaining;
+		})
+	}
+
+	setPairAddr(_new) {
+		this.setState(state => {
+			let {pairAddr, ...remaining} = state;
+			remaining.pairAddr = _new.value;
+			return remaining;
+		})
+	}
+
+	callSetPairAddr() {
+		const _new = document.getElementById("pairAddrInput");
+		console.log(this.state.pairAddr);
+		this.setPairAddr(_new);
+	}
+
+	setAuthorizedPairs(_new) {
+		this.setState(state => {
+			let {authorizedPairs, ...remaining} = state;
+			remaining.authorizedPairs = _new;
+			return remaining;
+		})
+	}
+
+	fillAuthorizedPoolInput() {
+		let list = document.getElementById("pairlist");
+		let childs = []
+		for (let i = 0; i < this.state.authorizedPairs.length; i++) {
+			let option = document.createElement('option');
+			option.value = this.state.authorizedPairs[i];
+			childs.push(option);	 
+		}
+		list.replaceChildren(...childs);
 	}
 
 	setBorrow(_new) {
@@ -124,7 +173,19 @@ class Gambling extends React.Component {
 			const roundNum = await loadRoundNum();
 
 			this.setRoundNum(roundNum);
-			console.log(await getCurrentRound(this.state.walletAddress, roundNum));
+
+			const newAuthorizedPool = await getAuthorizedPairs();
+
+			if (newAuthorizedPool.length !== this.state.authorizedPairs.length) {
+				this.setAuthorizedPairs(await getAuthorizedPairs());
+
+				this.fillAuthorizedPoolInput();
+			}
+			
+			if (this.state.pairAddr && this.state.pairAddr !== "") {
+				this.setApprovedLP(await getApprovedToken(this.state.walletAddress, this.state.pairAddr, GamblingContractAddress))
+			}
+
 			this.setCurrentRoundState(await getCurrentRound(this.state.walletAddress, roundNum));
 		} catch (e) {
 
@@ -139,20 +200,33 @@ class Gambling extends React.Component {
 
 	handleParticipation = async (e) => {
 		e.preventDefault();
-		await participate(this.state.walletAddress, this.state.betValue, toWei(this.state.gmbAmount), this.state.borrow);
+		await participate(this.state.walletAddress, this.state.betValue, toWei(this.state.gmbAmount), this.state.pairAddr, this.state.borrow);
 	};
 
 	handleBorrow = async (e) => {
-		// e.preventDefault();
-		console.log(e.target.checked)
+		let borrowVal = e.target.checked
+		if (borrowVal === true) {
+			document.getElementById('pairAddrInput').disabled = true;
+		} else {
+			document.getElementById('pairAddrInput').disabled = false;
+		}	
 		this.setBorrow(e.target.checked);
-		// await participate(this.state.walletAddress, this.state.betValue, toWei(this.state.gmbAmount));
 	};
 
 	connectWalletPressed = async () => {
 		const walletResponse = await connectWallet();
 		this.setStatus(walletResponse.status);
 		this.setWallet(walletResponse.address);
+	};
+
+	handleGMBApproval = async (e) => {
+		e.preventDefault();
+		await gmbApproval(this.state.walletAddress, '9999999999999999999999999999999999999999');
+	};
+
+	handleLPApproval = async (e) => {
+		e.preventDefault();
+		await tokenApproval(this.state.walletAddress, this.state.pairAddr, '9999999999999999999999999999999999999999', GamblingContractAddress);
 	};
 
 	render() {
@@ -234,6 +308,20 @@ class Gambling extends React.Component {
 											  onSubmit={this.handleParticipation}>
 											<div className="wrap-input100 validate-input m-b-10"
 												 data-validate="Bet value is required">
+												<input className="input100" type="list" name="pairAddr" id="pairAddrInput" list="pairlist"
+												value={this.state.pairAddr}
+												onChange={(e) => this.callSetPairAddr()}
+												placeholder="Pair Address" style={{"margin-bottom": "5px"}}/>
+												<datalist name="Pair Address" id="pairlist">
+												</datalist>
+
+												<span className="focus-input100"></span>
+												<span className="symbol-input100">
+													<i className="fa fa-user"></i>
+												</span>
+											</div>
+											<div className="wrap-input100 validate-input m-b-10"
+												 data-validate="Bet value is required">
 												<input className="input100" type="text" name="betValue"
 													   value={this.state.betValue}
 													   onChange={(e) => this.setBetValue(e.target.value)}
@@ -241,8 +329,8 @@ class Gambling extends React.Component {
 
 												<span className="focus-input100"></span>
 												<span className="symbol-input100">
-											<i className="fa fa-user"></i>
-										</span>
+													<i className="fa fa-user"></i>
+												</span>
 											</div>
 											<div className="wrap-input100 validate-input m-b-10"
 												 data-validate="Amount is required">
@@ -256,8 +344,18 @@ class Gambling extends React.Component {
 										</span>
 											</div>
 											<div className="container-login100-form-btn p-t-10">
-												<input className="btn" value="Participate" type="submit"/>
-
+												{
+													this.state.currentRoundState.approvedGMB <= 0 ?
+													<button className="btn" type="button" value="Approve GMB" onClick={this.handleGMBApproval}>Approve GMB</button> :
+													<div>
+														{this.state.currentRoundState.approvedLP}
+														{
+															this.state.borrow === false && this.state.approvedLP !== "" && this.state.approvedLP <= 0 ?
+															<button className="btn" type="button" value="Approve LP" onClick={this.handleLPApproval}>Approve LP</button>:
+															<input className="btn" value="Participate" type="submit"/>
+														}
+													</div>
+												}
 
 
 												<label className="toggle" htmlFor="uniqueID">

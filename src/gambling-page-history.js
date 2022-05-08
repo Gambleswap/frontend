@@ -95,7 +95,6 @@ class History extends React.Component {
     };
 
     getHistory = async () => {
-        console.log(this.state.walletAddress);
         if (!this.state.walletAddress || this.state.walletAddress === "")
             return [];
 

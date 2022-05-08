@@ -16,10 +16,10 @@ const GMBContractABI = require("../abis/GMBToken-abi.json");
 export const GMBContractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 const GamblingContractABI = require("../abis/Gambling-abi.json");
-const GamblingContractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+export const GamblingContractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 const GambleswapRouterABI = require("../abis/GambleswapRouter-abi.json");
-const GambleswapRouterAddress = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853";
+export const GambleswapRouterAddress = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853";
 
 const GambleswapLPLendingABI = require("../abis/GambleswapLPLending-abi");
 const GambleswapLPLendingAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
@@ -281,7 +281,7 @@ export const toWei = (amount) => {
 	return ethers.utils.parseEther(amount).toString()
 };
 
-export const participate = async (fromAddress, betValue, gmbToken, borrow) => {
+export const participate = async (fromAddress, betValue, gmbToken, pairAddr, borrow) => {
 	//input error handling
 	if (!window.ethereum || fromAddress === null) {
 		return {
@@ -296,10 +296,14 @@ export const participate = async (fromAddress, betValue, gmbToken, borrow) => {
 		};
 	}
 
+	if (borrow === true) {
+		pairAddr = fromAddress;
+	}
+
 	const transactionParameters = {
 		to: GamblingContractAddress, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
-		data: GamblingContract.methods.participate(gmbToken, betValue, borrow).encodeABI(),
+		data: GamblingContract.methods.participate(gmbToken, betValue, pairAddr, borrow).encodeABI(),
 	};
 	
 	await signTrx(transactionParameters)
@@ -412,6 +416,7 @@ export const getCurrentRound = async (fromAddress, roundNum) => {
 	data['totalJackpotVal'] = gameHistory.jackpotValue;
 	data['yourNumber'] = gameHistory.userBetValue;
 	data['yourBet'] = gameHistory.userGMB;
+	data['approvedGMB'] = await GMBTokenContract.methods.allowance(fromAddress, GamblingContractAddress).call()
 	return data
 };
 
@@ -419,12 +424,12 @@ export const getApprovedGMB = async (fromAddress) => {
 	return await GMBTokenContract.methods.allowance(fromAddress, GamblingContractAddress).call();
 };
 
-export const getApprovedLP = async (fromAddress, pairAddr) => {
+export const getApprovedToken = async (fromAddress, tokenAddr, toAddr) => {
 	const contract = new web3.eth.Contract(
 		ERC20ABI,
-		pairAddr
+		tokenAddr
 	);
-	return await contract.methods.allowance(fromAddress, GamblingContractAddress).call();
+	return await contract.methods.allowance(fromAddress, toAddr).call();
 };
 
 export const getAuthorizedPairs = async () => {
@@ -462,16 +467,16 @@ export const gmbApproval = async (fromAddress, gmbToken) => {
 
 };
 
-export const lpApproval = async (fromAddress, pairAddr, lpToken) => {
+export const tokenApproval = async (fromAddress, tokenAddr, amount, toAddr) => {
 	//input error handling
-	if (!window.ethereum || fromAddress === null || pairAddr === null) {
+	if (!window.ethereum || fromAddress === null || tokenAddr === null) {
 		return {
 			status:
 				"💡 Connect your Metamask wallet to update the message on the blockchain.",
 		};
 	}
 
-	if (lpToken.trim() === "") {
+	if (amount.trim() === "") {
 		return {
 			status: "❌ Your message cannot be an empty string.",
 		};
@@ -479,13 +484,13 @@ export const lpApproval = async (fromAddress, pairAddr, lpToken) => {
 
 	const contract = new web3.eth.Contract(
 		ERC20ABI,
-		pairAddr
+		tokenAddr
 	);
 
 	const transactionParameters = {
-		to: pairAddr, // Required except during contract publications.
+		to: tokenAddr, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
-		data: contract.methods.approve(GamblingContractAddress, lpToken).encodeABI(),
+		data: contract.methods.approve(toAddr, amount).encodeABI(),
 	};
 
 	await signTrx(transactionParameters)
