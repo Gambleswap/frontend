@@ -1,4 +1,4 @@
-import {claimPrize, getCurrentWalletConnected, getGamesHistory, loadRoundNum, toEther, toWei} from "./util/interact.js";
+import {getCurrentWalletConnected, loadRoundNum, toEther, toWei} from "./util/interact.js";
 
 import React from "react";
 import {enterPool, exitPool, getLendingPools} from "./util/interact";
@@ -57,7 +57,7 @@ class Lending extends React.Component {
 
 	componentDidMount = async () => {
 		await this.fetchData();
-		await setInterval(() => this.fetchData(), 2000);
+		await setInterval(() => this.fetchData(), 3000);
 	};
 
 	fetchData = async () => {
@@ -220,16 +220,16 @@ class Lending extends React.Component {
                                                             </div>
                                                         </>
                                                         :
-                                                            <div className="wrap-input100 validate-input m-b-10"
-                                                                 data-validate="Amount is required" style={{display: "inline-grid"}}>
-                                                                <input className="input100" type="text" name="betValue"
-                                                                       value={this.state.amount}
-                                                                       onChange={(e) => this.setAmount(e.target.value, pool.index)}
-                                                                       placeholder="Amount"
-                                                                       style={{"margin-bottom": "10px"}}
-                                                                />
+                                                        <div className="wrap-input100 validate-input m-b-10"
+                                                             data-validate="Amount is required" style={{display: "inline-grid"}}>
+                                                            <input className="input100" type="text" name="betValue"
+                                                                   value={this.state.amount}
+                                                                   onChange={(e) => this.setAmount(e.target.value, pool.index)}
+                                                                   placeholder="Amount"
+                                                                   style={{"margin-bottom": "10px"}}
+                                                            />
                                                             <button className="btn" type="button" pool-index={pool.index}
-                                                                    onClick={this.handleEnter}>Enter Pool</button>
+                                                                onClick={this.handleEnter}>Enter Pool</button>
                                                         </div>
 												}
 											</div>

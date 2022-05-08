@@ -22,7 +22,7 @@ const GambleswapRouterABI = require("../abis/GambleswapRouter-abi.json");
 export const GambleswapRouterAddress = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853";
 
 const GambleswapLPLendingABI = require("../abis/GambleswapLPLending-abi");
-const GambleswapLPLendingAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
+export const GambleswapLPLendingAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
 
 const ERC20ABI = require("../abis/ERC20-abi.json");
 
@@ -47,6 +47,15 @@ export const getLendingPools = async (address) => {
 	return pools
 };
 
+export const validateAddress = (address) => {
+	try {
+		ethers.utils.getAddress(address);
+		return true
+	} catch (e) {
+		return false
+	}
+};
+
 export const getAmount = async (token0, token1, type, value, slippage) => {
 	var BN = web3.utils.BN;
 	const slippageTolerance = new Percent(`${slippage*100}`, "10000"); // 50 bips, or 0.50%
@@ -61,6 +70,46 @@ export const getAmount = async (token0, token1, type, value, slippage) => {
 	const res = type === TradeType.EXACT_INPUT ? trade.minimumAmountOut(slippageTolerance).raw : trade.maximumAmountIn(slippageTolerance).raw
 	return res
 };
+
+export const getPair = async (token0, token1) => {
+	try {
+		const RAD = await Fetcher.fetchTokenData(chainId, token0, provider);
+		const DNI = await Fetcher.fetchTokenData(chainId, token1, provider);
+		const pair = await Fetcher.fetchPairData(RAD, DNI, provider);
+		return pair
+	}
+	catch (e) {
+		console.log(e);
+		return undefined
+	}
+};
+
+export const addLiquidity = async (token0, token1, amount0, amount1, amount0min, amount1min, fromAddress) => {
+	const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
+	//input error handling
+	if (!window.ethereum || fromAddress === null) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	console.log("finaly");
+	console.log(token0);
+	console.log(token1);
+	console.log(amount0);
+	console.log(amount1);
+	console.log(amount0min);
+	console.log(amount1min);
+
+	const transactionParameters = {
+		to: GambleswapRouterAddress, // Required except during contract publications.
+		from: fromAddress, // must match user's active address.
+		data: GambleswapRouterContract.methods.addLiquidity(`${token0}`, `${token1}`, amount0, amount1, amount0min, amount1min, fromAddress, deadline).encodeABI(),
+	};
+
+	await signTrx(transactionParameters)
+}
 
 export const uniswapRoute = async (fromAddress, token0, token1, to, amount, type, slippage) => {
 
@@ -184,6 +233,40 @@ export const loadCoveragePerGMB = async () => {
 
 export const loadRoundNum = async () => {
 	return await GamblingContract.methods.getCurrentRound().call();
+};
+
+export const loadLPTokenAccountBalance = async (account, token0, token1) => {
+	const RAD = await Fetcher.fetchTokenData(chainId, token0, provider);
+	const DNI = await Fetcher.fetchTokenData(chainId, token1, provider);
+	const pair = await Fetcher.fetchPairData(RAD, DNI, provider);
+	const contract = new web3.eth.Contract(
+		GMBContractABI,
+		pair.liquidityToken.address
+	);
+	return await contract.methods.balanceOf(account).call();
+};
+
+export const removeLiquidity = async (account, token0, token1, liquidity) => {
+	//input error handling
+	if (!window.ethereum || account === null) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	let now = new Date();
+
+	// tomorrow date
+	let tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1);
+
+	const transactionParameters = {
+		to: GambleswapRouterAddress, // Required except during contract publications.
+		from: account, // must match user's active address.
+		data: GambleswapRouterContract.methods.removeLiquidity(`${token0}`, `${token1}`, `${liquidity}`, 0, 0, account, `${tomorrow.valueOf()/1000}`).encodeABI(),
+	};
+
+	await signTrx(transactionParameters)
 };
 
 export const loadTokenAccountBalance = async (account, contractAddress) => {
@@ -432,6 +515,14 @@ export const getApprovedToken = async (fromAddress, tokenAddr, toAddr) => {
 	return await contract.methods.allowance(fromAddress, toAddr).call();
 };
 
+export const getApproval = async (token, owner, address) => {
+	const contract = new web3.eth.Contract(
+		ERC20ABI,
+		token
+	);
+	return await contract.methods.allowance(owner, address).call();
+};
+
 export const getAuthorizedPairs = async () => {
 	let poolLength = await GMBTokenContract.methods.getAuthorisedPoolsLength().call();
 	let poolAddrs = []
@@ -461,6 +552,30 @@ export const gmbApproval = async (fromAddress, gmbToken) => {
 		to: GMBContractAddress, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
 		data: GMBTokenContract.methods.approve(GamblingContractAddress, gmbToken).encodeABI(),
+	};
+
+	await signTrx(transactionParameters)
+
+};
+
+export const approveToken = async (token, owner, address) => {
+	//input error handling
+	if (!window.ethereum) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	const contract = new web3.eth.Contract(
+		ERC20ABI,
+		token
+	);
+
+	const transactionParameters = {
+		to: token, // Required except during contract publications.
+		from: owner, // must match user's active address.
+		data: contract.methods.approve(address, "99999999999999999999999999999999999999999999999999").encodeABI(),
 	};
 
 	await signTrx(transactionParameters)

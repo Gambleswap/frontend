@@ -1,316 +1,340 @@
 [
-{
-"inputs": [
-{
-"internalType": "address",
-"name": "gmbAddress",
-"type": "address"
-},
-{
-"internalType": "address",
-"name": "gamblingAddress",
-"type": "address"
-}
-],
-"stateMutability": "nonpayable",
-"type": "constructor"
-},
-{
-"anonymous": false,
-"inputs": [
-{
-"indexed": true,
-"internalType": "address",
-"name": "",
-"type": "address"
-},
-{
-"indexed": true,
-"internalType": "address",
-"name": "",
-"type": "address"
-},
-{
-"indexed": false,
-"internalType": "uint256",
-"name": "",
-"type": "uint256"
-}
-],
-"name": "Borrow",
-"type": "event"
-},
-{
-"anonymous": false,
-"inputs": [
-{
-"indexed": true,
-"internalType": "address",
-"name": "",
-"type": "address"
-},
-{
-"indexed": true,
-"internalType": "address",
-"name": "",
-"type": "address"
-},
-{
-"indexed": false,
-"internalType": "uint256",
-"name": "",
-"type": "uint256"
-}
-],
-"name": "ExitLend",
-"type": "event"
-},
-{
-"anonymous": false,
-"inputs": [
-{
-"indexed": true,
-"internalType": "address",
-"name": "",
-"type": "address"
-},
-{
-"indexed": true,
-"internalType": "address",
-"name": "",
-"type": "address"
-},
-{
-"indexed": false,
-"internalType": "uint256",
-"name": "",
-"type": "uint256"
-}
-],
-"name": "Lend",
-"type": "event"
-},
-{
-"anonymous": false,
-"inputs": [
-{
-"indexed": false,
-"internalType": "uint256",
-"name": "",
-"type": "uint256"
-}
-],
-"name": "Refresh",
-"type": "event"
-},
-{
-"anonymous": false,
-"inputs": [
-{
-"indexed": true,
-"internalType": "address",
-"name": "",
-"type": "address"
-},
-{
-"indexed": true,
-"internalType": "address",
-"name": "",
-"type": "address"
-}
-],
-"name": "Return",
-"type": "event"
-},
-{
-"anonymous": false,
-"inputs": [
-{
-"indexed": true,
-"internalType": "address",
-"name": "",
-"type": "address"
-}
-],
-"name": "newPoolAdded",
-"type": "event"
-},
-{
-"inputs": [
-{
-"internalType": "address",
-"name": "addr",
-"type": "address"
-},
-{
-"internalType": "uint256",
-"name": "interest",
-"type": "uint256"
-}
-],
-"name": "addPool",
-"outputs": [],
-"stateMutability": "nonpayable",
-"type": "function"
-},
-{
-"inputs": [
-{
-"internalType": "address",
-"name": "borrower",
-"type": "address"
-}
-],
-"name": "borrow",
-"outputs": [],
-"stateMutability": "nonpayable",
-"type": "function"
-},
-{
-"inputs": [
-{
-"internalType": "uint256",
-"name": "index",
-"type": "uint256"
-}
-],
-"name": "exitLendingPool",
-"outputs": [],
-"stateMutability": "nonpayable",
-"type": "function"
-},
-{
-"inputs": [],
-"name": "getCheapestPool",
-"outputs": [
-{
-"internalType": "uint256",
-"name": "res",
-"type": "uint256"
-}
-],
-"stateMutability": "view",
-"type": "function"
-},
-{
-"inputs": [
-{
-"internalType": "uint256",
-"name": "index",
-"type": "uint256"
-},
-{
-"internalType": "uint256",
-"name": "amount",
-"type": "uint256"
-}
-],
-"name": "lend",
-"outputs": [],
-"stateMutability": "nonpayable",
-"type": "function"
-},
-{
-"inputs": [
-{
-"internalType": "uint256",
-"name": "",
-"type": "uint256"
-},
-{
-"internalType": "address",
-"name": "",
-"type": "address"
-}
-],
-"name": "lenders",
-"outputs": [
-{
-"internalType": "uint256",
-"name": "amount",
-"type": "uint256"
-},
-{
-"internalType": "uint256",
-"name": "debtPerShare",
-"type": "uint256"
-},
-{
-"internalType": "bool",
-"name": "valid",
-"type": "bool"
-}
-],
-"stateMutability": "view",
-"type": "function"
-},
-{
-"inputs": [
-{
-"internalType": "uint256",
-"name": "",
-"type": "uint256"
-}
-],
-"name": "pools",
-"outputs": [
-{
-"internalType": "address",
-"name": "lpTokenAddress",
-"type": "address"
-},
-{
-"internalType": "uint256",
-"name": "lendersNum",
-"type": "uint256"
-},
-{
-"internalType": "uint256",
-"name": "totalLiquidity",
-"type": "uint256"
-},
-{
-"internalType": "uint256",
-"name": "totalLiquidityBorrowed",
-"type": "uint256"
-},
-{
-"internalType": "uint256",
-"name": "interestPerShare",
-"type": "uint256"
-},
-{
-"internalType": "uint256",
-"name": "interestPerBorrow",
-"type": "uint256"
-},
-{
-"internalType": "bool",
-"name": "valid",
-"type": "bool"
-}
-],
-"stateMutability": "view",
-"type": "function"
-},
-{
-"inputs": [],
-"name": "poolsNumber",
-"outputs": [
-{
-"internalType": "uint256",
-"name": "",
-"type": "uint256"
-}
-],
-"stateMutability": "view",
-"type": "function"
-},
-{
-"inputs": [],
-"name": "refresh",
-"outputs": [],
-"stateMutability": "nonpayable",
-"type": "function"
-}
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "gmbAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "gamblingAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "Borrow",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "ExitLend",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "Lend",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "Refresh",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "Return",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "newPoolAdded",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "addr",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "interest",
+        "type": "uint256"
+      }
+    ],
+    "name": "addPool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "borrower",
+        "type": "address"
+      }
+    ],
+    "name": "borrow",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "exitLendingPool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCheapestPool",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "res",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "lp",
+        "type": "address"
+      }
+    ],
+    "name": "getLentAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "lend",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "lenders",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "debtPerShare",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "valid",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "pools",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "lpTokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lendersNum",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalLiquidity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalLiquidityBorrowed",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "interestPerShare",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "interestPerBorrow",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "valid",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "poolsNumber",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "refresh",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
 ]

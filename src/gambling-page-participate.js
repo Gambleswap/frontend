@@ -195,7 +195,7 @@ class Gambling extends React.Component {
 
 
 	componentDidMount = async () => {
-		this.interval = setInterval(() => this.fetchData(), 2000);
+		this.interval = setInterval(() => this.fetchData(), 3000);
 	};
 
 	handleParticipation = async (e) => {
