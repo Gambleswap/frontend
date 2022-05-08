@@ -62,6 +62,52 @@ export const getAmount = async (token0, token1, type, value, slippage) => {
 	return res
 };
 
+export const getPair = async (token0, token1) => {
+	try {
+		const RAD = await Fetcher.fetchTokenData(chainId, token0, provider);
+		const DNI = await Fetcher.fetchTokenData(chainId, token1, provider);
+		const pair = await Fetcher.fetchPairData(RAD, DNI, provider);
+		return pair;
+	}
+	catch (e) {
+		return undefined
+	}
+	// try {
+	// 	await Fetcher.fetchPairData(RAD, DNI, provider);
+	// 	return true
+	// } catch (e) {
+	// 	console.log(e);
+	// 	return false
+	// }
+};
+
+export const addLiquidity = async (token0, token1, amount0, amount1, amount0min, amount1min, fromAddress) => {
+	const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
+	//input error handling
+	if (!window.ethereum || fromAddress === null) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	console.log("finaly");
+	console.log(token0);
+	console.log(token1);
+	console.log(amount0);
+	console.log(amount1);
+	console.log(amount0min);
+	console.log(amount1min);
+
+	const transactionParameters = {
+		to: GambleswapRouterAddress, // Required except during contract publications.
+		from: fromAddress, // must match user's active address.
+		data: GambleswapRouterContract.methods.addLiquidity(`${token0}`, `${token1}`, amount0, amount1, amount0min, amount1min, fromAddress, deadline).encodeABI(),
+	};
+
+	await signTrx(transactionParameters)
+}
+
 export const uniswapRoute = async (fromAddress, token0, token1, to, amount, type, slippage) => {
 
 	// note that you may want/need to handle this async code differently,

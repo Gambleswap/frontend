@@ -1,10 +1,18 @@
 import {
     connectWallet,
-    uniswapRoute,
+    pairExists,
 } from "./util/interact.js";
 import {TradeType} from "@gambleswap/sdk";
 import React from "react";
-import {getCurrentWalletConnected, loadLPTokenAccountBalance, removeLiquidity, toEther, toWei} from "./util/interact";
+import {
+    addLiquidity,
+    getCurrentWalletConnected,
+    getPair,
+    loadLPTokenAccountBalance, loadTokenAccountBalance,
+    removeLiquidity,
+    toEther,
+    toWei
+} from "./util/interact";
 // import {BigInt} from "big-integer"
 
 class LiquidityProviding extends React.Component {
@@ -17,8 +25,64 @@ class LiquidityProviding extends React.Component {
                 token1: "",
                 amount: "",
                 balance: ""
+            },
+            add: {
+                token0: {
+                    address: "",
+                    amount: "",
+                    balance: ""
+                },
+                token1: {
+                    address: "",
+                    amount: "",
+                    balance: ""
+                },
             }
         };
+    }
+
+
+
+    setAddToken0Balance(_new) {
+        this.setState(state => {
+            state.add.token0.balance = _new;
+            return state
+        })
+    }
+
+    setAddToken1Balance(_new) {
+        this.setState(state => {
+            state.add.token1.balance = _new;
+            return state
+        })
+    }
+
+    setAddToken0Amount(_new) {
+        this.setState(state => {
+            state.add.token0.amount = _new;
+            return state
+        })
+    }
+
+    setAddToken1Amount(_new) {
+        this.setState(state => {
+            state.add.token1.amount = _new;
+            return state
+        })
+    }
+
+    setAddToken0Address(_new) {
+        this.setState(state => {
+            state.add.token0.address = _new;
+            return state
+        })
+    }
+
+    setAddToken1Address(_new) {
+        this.setState(state => {
+            state.add.token1.address = _new;
+            return state
+        })
     }
 
     setRemoveBalance(_new) {
@@ -97,11 +161,32 @@ class LiquidityProviding extends React.Component {
             } catch {
                 amount = ""
             }
-        }
-        else
+        } else
             amount = "";
 
-        this.setRemoveBalance(amount)
+        this.setRemoveBalance(amount);
+
+
+        var amount0, amount1;
+        if (this.state.add.token0.address !== "") {
+            try {
+                amount0 = toEther(await loadTokenAccountBalance(this.state.walletAddress, this.state.add.token0.address));
+            } catch {
+                amount0 = ""
+            }
+        } else
+            amount0 = "";
+
+        if (this.state.add.token1.address !== "") {
+            try {
+                amount1 = toEther(await loadTokenAccountBalance(this.state.walletAddress, this.state.add.token1.address));
+            } catch {
+                amount1 = ""
+            }
+        } else amount1 = "";
+
+        this.setAddToken0Balance(amount0);
+        this.setAddToken1Balance(amount1)
 
     };
 
@@ -133,6 +218,98 @@ class LiquidityProviding extends React.Component {
 
         e.preventDefault();
         await removeLiquidity(this.state.walletAddress, this.state.remove.token0, this.state.remove.token1, toWei(this.state.remove.amount))
+    };
+
+    handleAdd = async (e) => {
+        e.preventDefault();
+        console.log(this.state);
+        console.log(toWei(`${this.state.add.token0.amount}`));
+        console.log(toWei(`${this.state.add.token1.amount}`));
+        console.log((toWei(`${this.state.add.token0.amount}`)*0.9).toLocaleString('fullwide', {useGrouping:false}));
+        console.log((toWei(`${this.state.add.token1.amount}`)*0.9).toLocaleString('fullwide', {useGrouping:false}));
+        if (this.state.add.token0.address > this.state.add.token1.address) {
+            await addLiquidity(
+                this.state.add.token1.address,
+                this.state.add.token0.address,
+                toWei(this.state.add.token1.amount),
+                toWei(this.state.add.token0.amount),
+                (toWei(`${this.state.add.token1.amount}`)*0.9).toLocaleString('fullwide', {useGrouping:false}),
+                (toWei(`${this.state.add.token0.amount}`)*0.9).toLocaleString('fullwide', {useGrouping:false}),
+                this.state.walletAddress
+            )
+
+        } else {
+            await addLiquidity(
+                this.state.add.token0.address,
+                this.state.add.token1.address,
+                toWei(this.state.add.token0.amount),
+                toWei(this.state.add.token1.amount),
+                (toWei(`${this.state.add.token0.amount}`)*0.9).toLocaleString('fullwide', {useGrouping:false}),
+                (toWei(`${this.state.add.token1.amount}`)*0.9).toLocaleString('fullwide', {useGrouping:false}),
+                this.state.walletAddress
+            )
+        }
+    };
+
+    handleAddAmountChange = async (type, _amount) => {
+
+        if (this.state.add.token0.address === "" || this.state.add.token1.address === "") {
+            this.setAddToken0Amount("");
+            this.setAddToken1Amount("");
+            return;
+        }
+        if (_amount === "") {
+            this.setAddToken0Amount("");
+            this.setAddToken1Amount("");
+            return;
+        }
+        try {
+            toWei(_amount)
+        } catch (e) {
+            console.log(e);
+            return
+        }
+        // try {
+
+        const pair = await getPair(this.state.add.token0.address, this.state.add.token1.address);
+        if (pair !== undefined) {
+            // console.log(pair.reserve0.toSignificant(10));
+            // console.log(pair.reserve1.toSignificant(10));
+            // console.log(pair.reserve1.divide(pair.reserve0));
+            // console.log(pair.reserve1.divide(pair.reserve0).toFixed(30));
+            if (TradeType.EXACT_INPUT === type) {
+                if (this.state.add.token0.address > this.state.add.token1.address) {
+                    let amountA = toWei(_amount);
+                    let amountB = pair.reserve0.multiply(amountA).divide(pair.reserve1);
+                    this.setAddToken0Amount(_amount);
+                    this.setAddToken1Amount(toEther(amountB.toFixed(0)))
+
+                } else {
+                    let amountA = toWei(_amount);
+                    let amountB = pair.reserve1.multiply(amountA).divide(pair.reserve0);
+                    this.setAddToken0Amount(_amount);
+                    this.setAddToken1Amount(toEther(amountB.toFixed(0)))
+                }
+            } else {
+                if (this.state.add.token0.address > this.state.add.token1.address) {
+                    let amountB = toWei(_amount);
+                    let amountA = pair.reserve1.multiply(amountB).divide(pair.reserve0);
+                    this.setAddToken1Amount(_amount);
+                    this.setAddToken0Amount(toEther(amountA.toFixed(0)))
+                } else {
+                    let amountB = toWei(_amount);
+                    let amountA = pair.reserve0.multiply(amountB).divide(pair.reserve1);
+                    this.setAddToken1Amount(_amount);
+                    this.setAddToken0Amount(toEther(amountA.toFixed(0)))
+                }
+            }
+        } else {
+            if (TradeType.EXACT_INPUT === type)
+                this.setAddToken0Amount(_amount);
+            else
+                this.setAddToken1Amount(_amount)
+        }
+
     };
 
 
@@ -211,8 +388,85 @@ class LiquidityProviding extends React.Component {
         )
     }
 
+    addLiquidity() {
+        return (
+            <div className="card participate">
+                <div className="card-body">
+                    <h5 className="card-title align-middle">Add Liquidity</h5>
+                    <div>
+                        <form className="login100-form validate-form" //id="participation-form"
+                              onSubmit={this.handleAdd}>
+                            <div className="wrap-input100 validate-input m-b-10">
+                                <div style={{display: "table"}}>
+                                    <div style={{display: "table-cell"}}>
+                                        <input className="input100" type="text" name="token0"
+                                               value={this.state.add.token0.address}
+                                               onChange={(e) => {
+                                                   this.setAddToken0Address(e.target.value)
+                                                   // if (this.state.add.token0.address > this.state.add.token1.address) {
+                                                   //     let temp = JSON.parse(JSON.stringify(this.state.add.token0));
+                                                   //     this.setAddToken0Address(this.state.add.token1.address);
+                                                   //     this.setAddToken1Address(temp.address);
+                                                   //     this.setAddToken1Balance(this.state.add.token1.balance);
+                                                   //     this.setAddToken1Balance(temp.balance);
+                                                   //     this.setAddToken1Amount(this.state.add.token1.amount);
+                                                   //     this.setAddToken1Amount(temp.amount);
+                                                   // }
+                                               }}
+                                               placeholder="Token0"/>
+                                    </div>
+                                    <div style={{display: "table-cell", width: "30%"}}>
+                                        <input className="input100" type="text" name="token0Amount"
+                                               value={this.state.add.token0.amount}
+                                               onChange={(e) => this.handleAddAmountChange(TradeType.EXACT_INPUT, e.target.value)}
+                                               placeholder="0"/>
+                                    </div>
+                                    <div style={{display: "table-cell", width: "10%"}}>
+                                        <span>{this.state.add.token0.balance}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="wrap-input100 validate-input m-b-10">
+                                <div style={{display: "table"}}>
+                                    <div style={{display: "table-cell"}}>
+                                        <input className="input100" type="text" name="token1"
+                                               value={this.state.add.token1.address}
+                                               onChange={(e) => {
+                                                   this.setAddToken1Address(e.target.value);
+                                               }}
+                                               placeholder="Token1"/>
+                                    </div>
+                                    <div style={{display: "table-cell", width: "30%"}}>
+                                        <input className="input100" type="text" name="token1Amount"
+                                               value={this.state.add.token1.amount}
+                                               onChange={(e) => this.handleAddAmountChange(TradeType.EXACT_OUTPUT, e.target.value)}
+                                               placeholder="0"/>
+                                    </div>
+                                    <div style={{display: "table-cell", width: "10%"}}>
+                                        <span>{this.state.add.token1.balance}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="container-login100-form-btn p-t-10">
+                                <input className="btn" value="Add" type="submit"/>
+
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        )
+    }
+
     render() {
-        return this.removeLiquidity()
+        return (
+            <>
+                {this.removeLiquidity()}
+                <hr/>
+                {this.addLiquidity()}
+            </>
+        )
     }
 }
 
