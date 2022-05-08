@@ -16,13 +16,13 @@ const GMBContractABI = require("../abis/GMBToken-abi.json");
 export const GMBContractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 const GamblingContractABI = require("../abis/Gambling-abi.json");
-const GamblingContractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+export const GamblingContractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 const GambleswapRouterABI = require("../abis/GambleswapRouter-abi.json");
-const GambleswapRouterAddress = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853";
+export const GambleswapRouterAddress = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853";
 
 const GambleswapLPLendingABI = require("../abis/GambleswapLPLending-abi");
-const GambleswapLPLendingAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
+export const GambleswapLPLendingAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
 
 const ERC20ABI = require("../abis/ERC20-abi.json");
 
@@ -47,6 +47,15 @@ export const getLendingPools = async (address) => {
 	return pools
 };
 
+export const validateAddress = (address) => {
+	try {
+		ethers.utils.getAddress(address);
+		return true
+	} catch (e) {
+		return false
+	}
+};
+
 export const getAmount = async (token0, token1, type, value, slippage) => {
 	var BN = web3.utils.BN;
 	const slippageTolerance = new Percent(`${slippage*100}`, "10000"); // 50 bips, or 0.50%
@@ -67,18 +76,12 @@ export const getPair = async (token0, token1) => {
 		const RAD = await Fetcher.fetchTokenData(chainId, token0, provider);
 		const DNI = await Fetcher.fetchTokenData(chainId, token1, provider);
 		const pair = await Fetcher.fetchPairData(RAD, DNI, provider);
-		return pair;
+		return pair
 	}
 	catch (e) {
+		console.log(e);
 		return undefined
 	}
-	// try {
-	// 	await Fetcher.fetchPairData(RAD, DNI, provider);
-	// 	return true
-	// } catch (e) {
-	// 	console.log(e);
-	// 	return false
-	// }
 };
 
 export const addLiquidity = async (token0, token1, amount0, amount1, amount0min, amount1min, fromAddress) => {
@@ -256,7 +259,6 @@ export const removeLiquidity = async (account, token0, token1, liquidity) => {
 
 	// tomorrow date
 	let tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1);
-	console.log(account, token0, token1, liquidity, tomorrow.valueOf()/1000);
 
 	const transactionParameters = {
 		to: GambleswapRouterAddress, // Required except during contract publications.
@@ -508,6 +510,14 @@ export const getApprovedLP = async (fromAddress, pairAddr) => {
 	return await contract.methods.allowance(fromAddress, GamblingContractAddress).call();
 };
 
+export const getApproval = async (token, owner, address) => {
+	const contract = new web3.eth.Contract(
+		ERC20ABI,
+		token
+	);
+	return await contract.methods.allowance(owner, address).call();
+};
+
 export const getAuthorizedPairs = async () => {
 	let poolLength = await GMBTokenContract.methods.getAuthorisedPoolsLength().call();
 	let poolAddrs = []
@@ -537,6 +547,30 @@ export const gmbApproval = async (fromAddress, gmbToken) => {
 		to: GMBContractAddress, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
 		data: GMBTokenContract.methods.approve(GamblingContractAddress, gmbToken).encodeABI(),
+	};
+
+	await signTrx(transactionParameters)
+
+};
+
+export const approveToken = async (token, owner, address) => {
+	//input error handling
+	if (!window.ethereum) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	const contract = new web3.eth.Contract(
+		ERC20ABI,
+		token
+	);
+
+	const transactionParameters = {
+		to: token, // Required except during contract publications.
+		from: owner, // must match user's active address.
+		data: contract.methods.approve(address, "99999999999999999999999999999999999999999999999999").encodeABI(),
 	};
 
 	await signTrx(transactionParameters)

@@ -5,13 +5,13 @@ import {
 import {TradeType} from "@gambleswap/sdk";
 import React from "react";
 import {
-    addLiquidity,
+    addLiquidity, approveToken, GambleswapRouterAddress, getApproval,
     getCurrentWalletConnected,
     getPair,
     loadLPTokenAccountBalance, loadTokenAccountBalance,
     removeLiquidity,
     toEther,
-    toWei
+    toWei, validateAddress
 } from "./util/interact";
 // import {BigInt} from "big-integer"
 
@@ -24,7 +24,12 @@ class LiquidityProviding extends React.Component {
                 token0: "",
                 token1: "",
                 amount: "",
-                balance: ""
+                balance: "",
+                approve: {
+                    active: false,
+                    token: "",
+                    address: ""
+                }
             },
             add: {
                 token0: {
@@ -37,11 +42,28 @@ class LiquidityProviding extends React.Component {
                     amount: "",
                     balance: ""
                 },
+                approve: {
+                    active: false,
+                    token: "",
+                    address: ""
+                }
             }
         };
     }
 
+    setAddApprove(_new) {
+        this.setState(state => {
+            state.add.approve = _new;
+            return state
+        })
+    }
 
+    setRemoveApprove(_new) {
+        this.setState(state => {
+            state.remove.approve = _new;
+            return state
+        })
+    }
 
     setAddToken0Balance(_new) {
         this.setState(state => {
@@ -155,29 +177,77 @@ class LiquidityProviding extends React.Component {
 
     fetchBalances = async () => {
         var amount;
-        if (this.state.remove.token0 !== "" && this.state.remove.token1 !== "") {
+        var flag = false
+        if (validateAddress(this.state.remove.token0) && validateAddress(this.state.remove.token1)) {
             try {
-                amount = (await loadLPTokenAccountBalance(this.state.walletAddress, this.state.remove.token0, this.state.remove.token1)) / 10 ** 18;
-            } catch {
-                amount = ""
+                const pair = await getPair(this.state.remove.token0, this.state.remove.token1);
+                if (pair !== undefined) {
+                    const allowance = await getApproval(pair.liquidityToken.address, this.state.walletAddress, GambleswapRouterAddress);
+                    amount = (await loadTokenAccountBalance(this.state.walletAddress, pair.liquidityToken.address)) / 10 ** 18;
+                    this.setRemoveBalance(amount);
+                    flag = true
+                    if (allowance < toWei(this.state.remove.amount.toLocaleString('fullwide', {useGrouping:false}))){
+                        this.setRemoveApprove({
+                            active: true,
+                            token: pair.liquidityToken.address,
+                            address: GambleswapRouterAddress
+                        })
+                    }
+                    else {
+                        this.setRemoveApprove({
+                            active: false,
+                            token: "",
+                            address: ""
+                        })
+                    }
+                }
+            } catch (e) {
+                amount = "";
+                console.log(e)
             }
-        } else
+        } else {
             amount = "";
-
-        this.setRemoveBalance(amount);
-
+        }
+        if (!flag) {
+            this.setRemoveBalance(amount);
+        }
 
         var amount0, amount1;
-        if (this.state.add.token0.address !== "") {
+        if (validateAddress(this.state.add.token0.address)) {
             try {
                 amount0 = toEther(await loadTokenAccountBalance(this.state.walletAddress, this.state.add.token0.address));
             } catch {
                 amount0 = ""
             }
+            try {
+                const allowance0 = await getApproval(this.state.add.token0.address, this.state.walletAddress, GambleswapRouterAddress);
+                const allowance1 = await getApproval(this.state.add.token1.address, this.state.walletAddress, GambleswapRouterAddress);
+                if (allowance0 < toWei(this.state.add.token0.amount.toLocaleString('fullwide', {useGrouping:false}))) {
+                    this.setAddApprove({
+                        active: true,
+                        token: this.state.add.token0.address,
+                        address: GambleswapRouterAddress
+                    })
+                }
+                else if (allowance1 < toWei(this.state.add.token1.amount.toLocaleString('fullwide', {useGrouping:false}))) {
+                    this.setAddApprove({
+                        active: true,
+                        token: this.state.add.token1.address,
+                        address: GambleswapRouterAddress
+                    })
+                } else {
+                    this.setAddApprove({
+                        active: false,
+                        token: "",
+                        address: ""
+                    })
+                }
+            } catch (e) {
+            }
         } else
             amount0 = "";
 
-        if (this.state.add.token1.address !== "") {
+        if (validateAddress(this.state.add.token1.address)) {
             try {
                 amount1 = toEther(await loadTokenAccountBalance(this.state.walletAddress, this.state.add.token1.address));
             } catch {
@@ -186,8 +256,7 @@ class LiquidityProviding extends React.Component {
         } else amount1 = "";
 
         this.setAddToken0Balance(amount0);
-        this.setAddToken1Balance(amount1)
-
+        this.setAddToken1Balance(amount1);
     };
 
     fetchData = async () => {
@@ -252,11 +321,11 @@ class LiquidityProviding extends React.Component {
     };
 
     handleAddAmountChange = async (type, _amount) => {
-
-        if (this.state.add.token0.address === "" || this.state.add.token1.address === "") {
+        if (!validateAddress(this.state.add.token0.address) || !validateAddress(this.state.add.token1.address)) {
             this.setAddToken0Amount("");
             this.setAddToken1Amount("");
             return;
+
         }
         if (_amount === "") {
             this.setAddToken0Amount("");
@@ -269,7 +338,6 @@ class LiquidityProviding extends React.Component {
             console.log(e);
             return
         }
-        // try {
 
         const pair = await getPair(this.state.add.token0.address, this.state.add.token1.address);
         if (pair !== undefined) {
@@ -309,15 +377,19 @@ class LiquidityProviding extends React.Component {
             else
                 this.setAddToken1Amount(_amount)
         }
-
     };
 
 
     handleRemoveAmountChange = async (_amount) => {
 
-        if (this.state.remove.token0 === "" || this.state.remove.token1 === "") {
+        if (!validateAddress(this.state.remove.token0) || !validateAddress(this.state.remove.token1)) {
             this.setRemoveAmount("");
             return;
+        }
+        const pair = await getPair(this.state.remove.token0, this.state.remove.token1);
+        if (pair === undefined){
+            this.setRemoveAmount("");
+            return
         }
         if (_amount === "") {
             this.setRemoveAmount("");
@@ -340,6 +412,15 @@ class LiquidityProviding extends React.Component {
 
     };
 
+    handleRemoveApprove = async (e) => {
+        e.preventDefault();
+        await approveToken(
+            this.state.remove.approve.token,
+            this.state.walletAddress,
+            GambleswapRouterAddress
+        )
+    };
+
     removeLiquidity() {
         return (
             <div className="card participate">
@@ -348,7 +429,10 @@ class LiquidityProviding extends React.Component {
                     <h5 className="card-title align-middle">Remove Liquidity</h5>
                     <div>
                         <form className="login100-form validate-form" //id="participation-form"
-                              onSubmit={this.handleRemove}>
+                              onSubmit={
+                                  this.state.remove.approve.active ? this.handleRemoveApprove: this.handleRemove
+
+                              }>
                             <div className="wrap-input100 validate-input m-b-10"
                                  data-validate="Token0 is required">
                                 <input className="input100" type="text" name="Token0"
@@ -378,7 +462,9 @@ class LiquidityProviding extends React.Component {
                                 </div>
                             </div>
                             <div className="container-login100-form-btn p-t-10">
-                                <input className="btn" value="Remove" type="submit"/>
+                                <input className="btn" value={
+                                    this.state.remove.approve.active ? "Approve": "Remove"
+                                } type="submit"/>
                             </div>
                         </form>
                     </div>
@@ -388,6 +474,15 @@ class LiquidityProviding extends React.Component {
         )
     }
 
+    handleAddApprove = async (e) => {
+        e.preventDefault();
+        await approveToken(
+            this.state.add.approve.token,
+            this.state.walletAddress,
+            GambleswapRouterAddress
+        )
+    };
+
     addLiquidity() {
         return (
             <div className="card participate">
@@ -395,7 +490,10 @@ class LiquidityProviding extends React.Component {
                     <h5 className="card-title align-middle">Add Liquidity</h5>
                     <div>
                         <form className="login100-form validate-form" //id="participation-form"
-                              onSubmit={this.handleAdd}>
+                              onSubmit={
+                                  this.state.add.approve.active ? this.handleAddApprove: this.handleAdd
+
+                              }>
                             <div className="wrap-input100 validate-input m-b-10">
                                 <div style={{display: "table"}}>
                                     <div style={{display: "table-cell"}}>
@@ -403,15 +501,6 @@ class LiquidityProviding extends React.Component {
                                                value={this.state.add.token0.address}
                                                onChange={(e) => {
                                                    this.setAddToken0Address(e.target.value)
-                                                   // if (this.state.add.token0.address > this.state.add.token1.address) {
-                                                   //     let temp = JSON.parse(JSON.stringify(this.state.add.token0));
-                                                   //     this.setAddToken0Address(this.state.add.token1.address);
-                                                   //     this.setAddToken1Address(temp.address);
-                                                   //     this.setAddToken1Balance(this.state.add.token1.balance);
-                                                   //     this.setAddToken1Balance(temp.balance);
-                                                   //     this.setAddToken1Amount(this.state.add.token1.amount);
-                                                   //     this.setAddToken1Amount(temp.amount);
-                                                   // }
                                                }}
                                                placeholder="Token0"/>
                                     </div>
@@ -448,7 +537,9 @@ class LiquidityProviding extends React.Component {
                                 </div>
                             </div>
                             <div className="container-login100-form-btn p-t-10">
-                                <input className="btn" value="Add" type="submit"/>
+                                <input className="btn" value={
+                                    this.state.add.approve.active ? "Approve": "Add"
+                                } type="submit"/>
 
                             </div>
                         </form>
