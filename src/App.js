@@ -6,12 +6,7 @@ import Header from "./gambling-page-head";
 import History from "./gambling-page-history";
 import Lending from "./lending-page";
 import Swap from "./swap-page-swap";
-<<<<<<< HEAD
-=======
-import GMBApproval from "./approval-page-gmb"
-import LPApproval from "./approval-page-lp"
 import LiquidityProviding from "./liquidity-providing"
->>>>>>> origin/main
 import "./App.css";
 import React from "react";
 import {
@@ -46,11 +41,7 @@ export function App() {
 					<Route path="/gambling" element={<GamblingPage />} />
 					<Route path="/lending" element={<LendingPage />} />
 					<Route path="/" element={<IndexPage />} />
-<<<<<<< HEAD
-=======
-					<Route path="/approve" element={<ApprovalPage />} />
 					<Route path="/lp" element={<LiquidityProvidingPage />} />
->>>>>>> origin/main
 					{/*<Route path="/">*/}
 					{/*	<Home />*/}
 					{/*</Route>*/}
