@@ -364,7 +364,7 @@ export const toWei = (amount) => {
 	return ethers.utils.parseEther(amount).toString()
 };
 
-export const participate = async (fromAddress, betValue, gmbToken, borrow) => {
+export const participate = async (fromAddress, betValue, gmbToken, pairAddr, borrow) => {
 	//input error handling
 	if (!window.ethereum || fromAddress === null) {
 		return {
@@ -379,10 +379,14 @@ export const participate = async (fromAddress, betValue, gmbToken, borrow) => {
 		};
 	}
 
+	if (borrow === true) {
+		pairAddr = fromAddress;
+	}
+
 	const transactionParameters = {
 		to: GamblingContractAddress, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
-		data: GamblingContract.methods.participate(gmbToken, betValue, borrow).encodeABI(),
+		data: GamblingContract.methods.participate(gmbToken, betValue, pairAddr, borrow).encodeABI(),
 	};
 	
 	await signTrx(transactionParameters)
@@ -495,6 +499,7 @@ export const getCurrentRound = async (fromAddress, roundNum) => {
 	data['totalJackpotVal'] = gameHistory.jackpotValue;
 	data['yourNumber'] = gameHistory.userBetValue;
 	data['yourBet'] = gameHistory.userGMB;
+	data['approvedGMB'] = await GMBTokenContract.methods.allowance(fromAddress, GamblingContractAddress).call()
 	return data
 };
 
@@ -502,12 +507,12 @@ export const getApprovedGMB = async (fromAddress) => {
 	return await GMBTokenContract.methods.allowance(fromAddress, GamblingContractAddress).call();
 };
 
-export const getApprovedLP = async (fromAddress, pairAddr) => {
+export const getApprovedToken = async (fromAddress, tokenAddr, toAddr) => {
 	const contract = new web3.eth.Contract(
 		ERC20ABI,
-		pairAddr
+		tokenAddr
 	);
-	return await contract.methods.allowance(fromAddress, GamblingContractAddress).call();
+	return await contract.methods.allowance(fromAddress, toAddr).call();
 };
 
 export const getApproval = async (token, owner, address) => {
@@ -577,16 +582,16 @@ export const approveToken = async (token, owner, address) => {
 
 };
 
-export const lpApproval = async (fromAddress, pairAddr, lpToken) => {
+export const tokenApproval = async (fromAddress, tokenAddr, amount, toAddr) => {
 	//input error handling
-	if (!window.ethereum || fromAddress === null || pairAddr === null) {
+	if (!window.ethereum || fromAddress === null || tokenAddr === null) {
 		return {
 			status:
 				"💡 Connect your Metamask wallet to update the message on the blockchain.",
 		};
 	}
 
-	if (lpToken.trim() === "") {
+	if (amount.trim() === "") {
 		return {
 			status: "❌ Your message cannot be an empty string.",
 		};
@@ -594,13 +599,13 @@ export const lpApproval = async (fromAddress, pairAddr, lpToken) => {
 
 	const contract = new web3.eth.Contract(
 		ERC20ABI,
-		pairAddr
+		tokenAddr
 	);
 
 	const transactionParameters = {
-		to: pairAddr, // Required except during contract publications.
+		to: tokenAddr, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
-		data: contract.methods.approve(GamblingContractAddress, lpToken).encodeABI(),
+		data: contract.methods.approve(toAddr, amount).encodeABI(),
 	};
 
 	await signTrx(transactionParameters)
