@@ -292,6 +292,13 @@ class LiquidityProviding extends React.Component {
         try {
             const {address, status} = await getCurrentWalletConnected();
             this.setWallet(address);
+            let tokenLists = [{"address": "0xaE9dbC7Cee6d34BEEa9b9c4DFF17D9c6516696c3", "symbol": "DNI"},
+                            {"address": "0x952DE112CdA4d3f664CdBC5e358C5916DD261BCb", "symbol": "RAD"},
+                        {"address": "ROSE", "symbol": "ROSE"}]
+            this.addDataList("tokenlist0", tokenLists);
+            this.addDataList("tokenlist1", tokenLists);
+            this.addDataList("remove-tokenlist0", tokenLists);
+            this.addDataList("remove-tokenlist1", tokenLists);
             await setInterval(() => this.fetchBalances(), 1000);
         } catch (e) {
 
@@ -478,14 +485,18 @@ class LiquidityProviding extends React.Component {
                                 <input className="input100" type="text" name="Token0"
                                        value={this.state.token0}
                                        onChange={(e) => this.setRemoveToken0(e.target.value)}
-                                       placeholder="Token0"/>
+                                       placeholder="Token0" list="remove-tokenlist0"/>
+                                <datalist name="Token Address" id="remove-tokenlist0">
+                                </datalist>
                             </div>
                             <div className="wrap-input100 validate-input m-b-10"
                                  data-validate="Token1 is required">
                                         <input className="input100" type="text" name="Token1"
                                                value={this.state.remove.token1}
                                                onChange={(e) => this.setRemoveToken1(e.target.value)}
-                                               placeholder="Token1"/>
+                                               placeholder="Token1" list="remove-tokenlist1"/>
+                                        <datalist name="Token Address" id="remove-tokenlist1">
+                                        </datalist>
                             </div>
 
                             <div className="wrap-input100 validate-input m-b-10">
@@ -531,6 +542,17 @@ class LiquidityProviding extends React.Component {
         )
     };
 
+    addDataList(id, tokenListAddr) {
+        let childs2 = []
+		for (let i = 0; i < tokenListAddr.length; i++) {
+			let option = document.createElement('option');
+			option.value = tokenListAddr[i].address;
+			option.innerText = tokenListAddr[i].symbol;
+			childs2.push(option);	 
+		}
+		document.getElementById(id).replaceChildren(...childs2);
+    }
+
     addLiquidity() {
         return (
             <div className="card participate">
@@ -550,7 +572,9 @@ class LiquidityProviding extends React.Component {
                                                onChange={(e) => {
                                                    this.setAddToken0Address(e.target.value)
                                                }}
-                                               placeholder="Token0"/>
+                                               placeholder="Token0" list="tokenlist0"/>
+                                        <datalist name="Token Address" id="tokenlist0">
+                                        </datalist>
                                     </div>
                                     <div style={{display: "table-cell", width: "30%"}}>
                                         <input className="input100" type="text" name="token0Amount"
@@ -571,7 +595,9 @@ class LiquidityProviding extends React.Component {
                                                onChange={(e) => {
                                                    this.setAddToken1Address(e.target.value);
                                                }}
-                                               placeholder="Token1"/>
+                                               placeholder="Token1" list="tokenlist1"/>
+                                        <datalist name="Token Address" id="tokenlist1">
+										</datalist>
                                     </div>
                                     <div style={{display: "table-cell", width: "30%"}}>
                                         <input className="input100" type="text" name="token1Amount"
