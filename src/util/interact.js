@@ -86,6 +86,29 @@ export const getPair = async (token0, token1) => {
 	}
 };
 
+export const getTokenList = async () => {
+	let allPairs = [];
+	for (var addr1 of Object.keys(Pair.cache)) {
+		for (var addr2 of Object.keys(Pair.cache[addr1])) {
+			allPairs.push(await Fetcher.fetchPairData(
+				await Fetcher.fetchTokenData(chainId, addr1, provider),
+				await Fetcher.fetchTokenData(chainId, addr2, provider),
+				provider, Pair.cache[addr1][addr2]
+				)
+			)
+		}
+	}
+	let allTokens = []
+	for (var pair of allPairs) {
+		let tokenAddr0 = pair.tokenAmounts[0].token.address
+		if (allTokens.indexOf(tokenAddr0) === -1) allTokens.push(tokenAddr0);
+		let tokenAddr1 = pair.tokenAmounts[1].token.address
+		if (allTokens.indexOf(tokenAddr1) === -1) allTokens.push(tokenAddr1);
+
+	}
+	return allTokens;
+};
+
 export const addLiquidity = async (token0, token1, amount0, amount1, amount0min, amount1min, fromAddress) => {
 	const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
 	//input error handling
