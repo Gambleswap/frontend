@@ -500,6 +500,7 @@ export const getCurrentRound = async (fromAddress, roundNum) => {
 	data['yourNumber'] = gameHistory.userBetValue;
 	data['yourBet'] = gameHistory.userGMB;
 	data['approvedGMB'] = await GMBTokenContract.methods.allowance(fromAddress, GamblingContractAddress).call()
+	data['approvedGMBtoLending'] = await GMBTokenContract.methods.allowance(fromAddress, GambleswapLPLendingAddress).call()
 	return data
 };
 

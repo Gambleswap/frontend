@@ -1,9 +1,12 @@
 import {
 	connectWallet,
+	GambleswapLPLendingAddress,
 	GamblingContractAddress,
 	getApprovedToken,
 	getAuthorizedPairs,
 	gmbApproval,
+	GMBContractAddress,
+	GMBTokenContract,
 	participate,
 	toEther,
 	tokenApproval,
@@ -206,9 +209,9 @@ class Gambling extends React.Component {
 	handleBorrow = async (e) => {
 		let borrowVal = e.target.checked
 		if (borrowVal === true) {
-			document.getElementById('pairAddrInput').disabled = true;
+			document.getElementById('pairAddrInput').style.opacity = "0";
 		} else {
-			document.getElementById('pairAddrInput').disabled = false;
+			document.getElementById('pairAddrInput').style.opacity = "1";
 		}	
 		this.setBorrow(e.target.checked);
 	};
@@ -227,6 +230,11 @@ class Gambling extends React.Component {
 	handleLPApproval = async (e) => {
 		e.preventDefault();
 		await tokenApproval(this.state.walletAddress, this.state.pairAddr, '9999999999999999999999999999999999999999', GamblingContractAddress);
+	};
+
+	handleGMBtoLendingApproval = async (e) => {
+		e.preventDefault();
+		await tokenApproval(this.state.walletAddress, GMBContractAddress, '9999999999999999999999999999999999999999', GambleswapLPLendingAddress);
 	};
 
 	render() {
@@ -348,11 +356,16 @@ class Gambling extends React.Component {
 													this.state.currentRoundState.approvedGMB <= 0 ?
 													<button className="btn" type="button" value="Approve GMB" onClick={this.handleGMBApproval}>Approve GMB</button> :
 													<div>
-														{this.state.currentRoundState.approvedLP}
 														{
 															this.state.borrow === false && this.state.approvedLP !== "" && this.state.approvedLP <= 0 ?
-															<button className="btn" type="button" value="Approve LP" onClick={this.handleLPApproval}>Approve LP</button>:
-															<input className="btn" value="Participate" type="submit"/>
+															<button className="btn" type="button" value="Approve LP" onClick={this.handleLPApproval}>Approve LP</button> :
+															<div>
+															{
+																this.state.borrow === true && this.state.currentRoundState.approvedGMBtoLending <= 0 ?
+																<button className="btn" type="button" value="Approve GMB" onClick={this.handleGMBtoLendingApproval}>Approve Lending GMB</button> :
+																<input className="btn" value="Participate" type="submit"/>
+															}
+															</div>
 														}
 													</div>
 												}

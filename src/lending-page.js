@@ -1,4 +1,4 @@
-import {getCurrentWalletConnected, loadRoundNum, toEther, toWei} from "./util/interact.js";
+import {GambleswapLPLendingAddress, getApproval, getCurrentWalletConnected, GMBContractAddress, loadRoundNum, toEther, tokenApproval, toWei} from "./util/interact.js";
 
 import React from "react";
 import {enterPool, exitPool, getLendingPools} from "./util/interact";
@@ -13,9 +13,18 @@ class Lending extends React.Component {
 			status: "",
 			pools: [],
 			roundNum: "",
-            amounts: {}
+            amounts: {},
+			approvedLP: []
 		};
 	}
+
+	setApprovedLP = (_new) => {
+		this.setState(state => {
+			let {approvedLP, ...remaining} = state;
+			remaining.approvedLP = _new;
+			return remaining;
+		})
+	};
 
 	setAmount = (_new, index) => {
 	    this.setState(state => {
@@ -68,9 +77,17 @@ class Lending extends React.Component {
 			this.setStatus(status);
 			this.setPools(await this.getPools());
 			const roundNum = await loadRoundNum();
-			this.setRoundNum(roundNum);
-		} catch (e) {
+			this.setRoundNum(roundNum);	
 
+			let approvedLP = []
+			for(let i = 0; i < this.state.pools.length; i++) {
+				let pairAddr = this.state.pools[i].liquidityPair.liquidityToken.address
+				approvedLP.push(await getApproval(pairAddr, this.state.walletAddress, GambleswapLPLendingAddress))
+			}	
+			console.log(approvedLP)
+			this.setApprovedLP(approvedLP)	
+		} catch (e) {
+			console.log(e)
 		}
 	};
 
@@ -108,10 +125,16 @@ class Lending extends React.Component {
 		const res = await enterPool(this.state.walletAddress, poolNumber, toWei(this.state.amounts[poolNumber]));
 	};
 
+	handleLPApproval = async (e) => {
+		e.preventDefault();
+		let poolNumber = Number(e.target.getAttribute('pool-index')) - 1;
+		let pairAddr = this.state.pools[poolNumber].liquidityPair.liquidityToken.address
+		await tokenApproval(this.state.walletAddress, pairAddr, '9999999999999999999999999999999999999999', GambleswapLPLendingAddress);
+	};
+
 	getPools = async () => {
 		if (!this.state.walletAddress || this.state.walletAddress === "")
 			return [];
-
 
 		let ah = await getLendingPools(this.state.walletAddress);
 		// let pool = ah[0];
@@ -133,6 +156,7 @@ class Lending extends React.Component {
 	};
 
 	fillInPreviousGames = () => {
+
 		return (
 			this.state.pools.map(pool =>
 				(
@@ -228,8 +252,12 @@ class Lending extends React.Component {
                                                                    placeholder="Amount"
                                                                    style={{"margin-bottom": "10px"}}
                                                             />
-                                                            <button className="btn" type="button" pool-index={pool.index}
-                                                                onClick={this.handleEnter}>Enter Pool</button>
+															{
+																this.state.approvedLP[pool.index-1] >= 0 ?
+																<button className="btn" type="button" pool-index={pool.index}
+																	onClick={this.handleEnter}>Enter Pool</button> :
+																<button className="btn" type="button" pool-index={pool.index} onClick={this.handleLPApproval}>Approve LP</button>
+															}
                                                         </div>
 												}
 											</div>
