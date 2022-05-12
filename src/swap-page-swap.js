@@ -2,6 +2,7 @@ import {
     connectWallet,
     GambleswapRouterAddress,
     getApprovedToken,
+    getTokenList,
     tokenApproval,
     uniswapRoute,
 } from "./util/interact.js";
@@ -24,6 +25,7 @@ class Swap extends React.Component {
             slippage: "0.5",
             fromTokenAllowance: "",
             toTokenAllowance: "",
+            tokenListAddr: [],
         };
     }
 
@@ -99,6 +101,14 @@ class Swap extends React.Component {
         })
     }
 
+    setTokenListAddr(_new) {
+        this.setState(state => {
+            let {tokenListAddr, ...remaining} = state;
+            remaining.tokenListAddr = _new;
+            return remaining;
+        })
+    }
+
     setToTokenAllowance(_new) {
         this.setState(state => {
             let {toTokenAllowance, ...remaining} = state;
@@ -170,9 +180,10 @@ class Swap extends React.Component {
         try {
             const {address, status} = await getCurrentWalletConnected();
             this.setWallet(address);
-            await setInterval(() => this.fetchBalances(), 1000);
+            this.setTokenListAddr(await getTokenList());
+            this.fillTokenListInput();
         } catch (e) {
-
+            console.log(e);
         }
     };
 
@@ -181,6 +192,7 @@ class Swap extends React.Component {
         this.addWalletListener();
         await this.connectWalletPressed();
         await this.fetchData();
+		await setInterval(() => this.fetchData(), 3000);
     };
 
 
@@ -276,6 +288,26 @@ class Swap extends React.Component {
         this.setType(type);
     };
 
+    fillTokenListInput() {
+        if (document.getElementById("tokenlist1").children.length === this.state.tokenListAddr.length)
+            return
+		let childs1 = []
+		for (let i = 0; i < this.state.tokenListAddr.length; i++) {
+			let option = document.createElement('option');
+			option.value = this.state.tokenListAddr[i];
+			childs1.push(option);	 
+		}
+		document.getElementById("tokenlist1").replaceChildren(...childs1);
+
+        let childs2 = []
+		for (let i = 0; i < this.state.tokenListAddr.length; i++) {
+			let option = document.createElement('option');
+			option.value = this.state.tokenListAddr[i];
+			childs2.push(option);	 
+		}
+		document.getElementById("tokenlist2").replaceChildren(...childs2);
+	}
+
     render() {
         return (
             <div className="card participate">
@@ -291,7 +323,9 @@ class Swap extends React.Component {
                                         <input className="input100" type="text" name="fromToken"
                                                value={this.state.fromToken}
                                                onChange={(e) => this.setFromToken(e.target.value)}
-                                               placeholder="From"/>
+                                               placeholder="From" list="tokenlist1"/>
+                                        <datalist name="Token Address" id="tokenlist1">
+										</datalist>
                                     </div>
                                     <div style={{display: "table-cell", width: "30%"}}>
                                         <input className="input100" type="text" name="fromAmount"
@@ -321,7 +355,9 @@ class Swap extends React.Component {
                                         <input className="input100" type="text" name="toToken"
                                                value={this.state.toToken}
                                                onChange={(e) => this.setToToken(e.target.value)}
-                                               placeholder="To"/>
+                                               placeholder="To" list="tokenlist2"/>
+                                               <datalist name="Token Address" id="tokenlist2">
+                                                </datalist>
                                     </div>
                                     <div style={{display: "table-cell", width: "30%"}}>
                                         <input className="input100" type="text" name="toAmount"
