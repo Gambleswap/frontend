@@ -5,7 +5,7 @@ import {
 import {TradeType} from "@gambleswap/sdk";
 import React from "react";
 import {
-    addLiquidity, approveToken, GambleswapRouterAddress, getApproval,
+    addLiquidity, approveToken, claimGMBFromLP, GambleswapRouterAddress, getApproval, getAuthorizedPairs,
     getCurrentWalletConnected,
     getPair,
     loadLPTokenAccountBalance, loadTokenAccountBalance,
@@ -25,6 +25,7 @@ class LiquidityProviding extends React.Component {
                 token1: "",
                 amount: "",
                 balance: "",
+                authorised: false,
                 approve: {
                     active: false,
                     token: "",
@@ -54,6 +55,13 @@ class LiquidityProviding extends React.Component {
     setAddApprove(_new) {
         this.setState(state => {
             state.add.approve = _new;
+            return state
+        })
+    }
+
+    setRemoveAuthorised(_new) {
+        this.setState(state => {
+            state.remove.authorised = _new;
             return state
         })
     }
@@ -177,7 +185,7 @@ class LiquidityProviding extends React.Component {
 
     fetchBalances = async () => {
         var amount;
-        var flag = false
+        var flag = false;
         if (validateAddress(this.state.remove.token0) && validateAddress(this.state.remove.token1)) {
             try {
                 const pair = await getPair(this.state.remove.token0, this.state.remove.token1);
@@ -185,20 +193,31 @@ class LiquidityProviding extends React.Component {
                     const allowance = await getApproval(pair.liquidityToken.address, this.state.walletAddress, GambleswapRouterAddress);
                     amount = (await loadTokenAccountBalance(this.state.walletAddress, pair.liquidityToken.address)) / 10 ** 18;
                     this.setRemoveBalance(amount);
-                    flag = true
-                    if (allowance < toWei(this.state.remove.amount.toLocaleString('fullwide', {useGrouping:false}))){
-                        this.setRemoveApprove({
-                            active: true,
-                            token: pair.liquidityToken.address,
-                            address: GambleswapRouterAddress
-                        })
+                    flag = true;
+                    let isAuthorised = false;
+                    let authorisedPools = await getAuthorizedPairs();
+                    for (let i=0; i<=authorisedPools.length; i++){
+                        if (authorisedPools[i] === pair.liquidityToken.address) {
+                            isAuthorised = true;
+                            break
+                        }
                     }
-                    else {
-                        this.setRemoveApprove({
-                            active: false,
-                            token: "",
-                            address: ""
-                        })
+                    this.setRemoveAuthorised(isAuthorised);
+
+                    if (this.state.remove.amount !== "") {
+                        if (allowance < toWei(this.state.remove.amount.toLocaleString('fullwide', {useGrouping: false}))) {
+                            this.setRemoveApprove({
+                                active: true,
+                                token: pair.liquidityToken.address,
+                                address: GambleswapRouterAddress
+                            })
+                        } else {
+                            this.setRemoveApprove({
+                                active: false,
+                                token: "",
+                                address: ""
+                            })
+                        }
                     }
                 }
             } catch (e) {
@@ -210,6 +229,7 @@ class LiquidityProviding extends React.Component {
         }
         if (!flag) {
             this.setRemoveBalance(amount);
+            this.setRemoveAuthorised(false)
         }
 
         var amount0, amount1;
@@ -263,7 +283,7 @@ class LiquidityProviding extends React.Component {
         try {
             const {address, status} = await getCurrentWalletConnected();
             this.setWallet(address);
-            await setInterval(() => this.fetchBalances(), 3000);
+            await setInterval(() => this.fetchBalances(), 1000);
         } catch (e) {
 
         }
@@ -381,6 +401,12 @@ class LiquidityProviding extends React.Component {
 
 
     handleRemoveAmountChange = async (_amount) => {
+        try {
+            parseFloat(_amount);
+            this.setRemoveAmount(_amount)
+        } catch (e) {
+
+        }
 
         if (!validateAddress(this.state.remove.token0) || !validateAddress(this.state.remove.token1)) {
             this.setRemoveAmount("");
@@ -421,6 +447,10 @@ class LiquidityProviding extends React.Component {
         )
     };
 
+    handleClaimGMB = async (e) => {
+        await claimGMBFromLP();
+    };
+
     removeLiquidity() {
         return (
             <div className="card participate">
@@ -430,8 +460,9 @@ class LiquidityProviding extends React.Component {
                     <div>
                         <form className="login100-form validate-form" //id="participation-form"
                               onSubmit={
-                                  this.state.remove.approve.active ? this.handleRemoveApprove: this.handleRemove
-
+                                  this.state.remove.approve.active ?
+                                      this.handleRemoveApprove :
+                                      this.handleRemove
                               }>
                             <div className="wrap-input100 validate-input m-b-10"
                                  data-validate="Token0 is required">
@@ -462,9 +493,17 @@ class LiquidityProviding extends React.Component {
                                 </div>
                             </div>
                             <div className="container-login100-form-btn p-t-10">
-                                <input className="btn" value={
+                                {
+                                    this.state.remove.authorised ?
+                                    <div style={{display: "table-cell"}}>
+                                        <button className="btn" onClick={this.handleClaimGMB}>Claim GMB</button>
+                                    </div> : <></>
+                                }
+                                <div style={{display: "table-cell", width: "50%"}}>
+                                    <input className="btn" value={
                                     this.state.remove.approve.active ? "Approve": "Remove"
-                                } type="submit"/>
+                                    } type="submit"/>
+                                </div>
                             </div>
                         </form>
                     </div>

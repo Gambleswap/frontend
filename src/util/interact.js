@@ -6,27 +6,29 @@ var ethers = require('ethers');
 require("dotenv").config();
 const Web3 = require("web3");
 
-var url = "http://127.0.0.1:8545";
+var url = "https://testnet.emerald.oasis.dev"; // "http://127.0.0.1:8545";
 var provider = new ethers.providers.JsonRpcProvider(url);
 // const alchemyKey = process.env.REACT_APP_ALCHEMY_KEY;
 // const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
 const web3 = new Web3(new Web3.providers.HttpProvider(url));
 
+const GambleswapPairABI = require("../abis/GambleswapPair-abi.json");
+
 const GMBContractABI = require("../abis/GMBToken-abi.json");
-export const GMBContractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+export const GMBContractAddress = "0x53b7D8952c6b32bE3cF0676045172b3596114869"; //"0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 const GamblingContractABI = require("../abis/Gambling-abi.json");
-export const GamblingContractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+export const GamblingContractAddress = "0x1E69FBFb7226D1b90b0bB6fBCEF3056fCd48357a"; //"0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 const GambleswapRouterABI = require("../abis/GambleswapRouter-abi.json");
-export const GambleswapRouterAddress = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853";
+export const GambleswapRouterAddress = "0xCf6Eb5308495b8270E01a1592b5a8254f62EB890"; //"0xa513E6E4b8f2a923D98304ec87F64353C4D5C853";
 
 const GambleswapLPLendingABI = require("../abis/GambleswapLPLending-abi");
-export const GambleswapLPLendingAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
+export const GambleswapLPLendingAddress = "0x47893140C79ab5D5B6E8603bcD9610d7b39ee45D"; //"0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
 
 const ERC20ABI = require("../abis/ERC20-abi.json");
 
-const chainId = 31337;
+const chainId = 42261; //31337;
 
 export const getLendingPools = async (address) => {
 	const len = await Fetcher.fetchPoolsLength(chainId, provider);
@@ -427,6 +429,30 @@ export const enterPool = async (fromAddress, poolIndex, amount) => {
 
 	await signTrx(transactionParameters);
 };
+
+export const claimGMBFromLP = async (fromAddress, pairAddress) => {
+	//input error handling
+	if (!window.ethereum || fromAddress === null || pairAddress == null) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	let pair = new web3.eth.Contract(
+		GambleswapPairABI,
+		pairAddress
+	);
+
+	const transactionParameters = {
+		to: pairAddress, // Required except during contract publications.
+		from: fromAddress, // must match user's active address.
+		data: pair.methods.claimGMB().encodeABI(),
+	};
+
+	await signTrx(transactionParameters);
+};
+
 export const claimPrize = async (fromAddress, gameNumber) => {
 	//input error handling
 	if (!window.ethereum || fromAddress === null) {
