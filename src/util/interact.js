@@ -100,10 +100,15 @@ export const getTokenList = async () => {
 	}
 	let allTokens = []
 	for (var pair of allPairs) {
+		console.log(pair)
 		let tokenAddr0 = pair.tokenAmounts[0].token.address
-		if (allTokens.indexOf(tokenAddr0) === -1) allTokens.push(tokenAddr0);
+		let tokenSym0 = pair.tokenAmounts[0].token.symbol
+		if (allTokens.indexOf(tokenAddr0) === -1)
+			allTokens.push({'address': tokenAddr0, 'symbol': tokenSym0});
 		let tokenAddr1 = pair.tokenAmounts[1].token.address
-		if (allTokens.indexOf(tokenAddr1) === -1) allTokens.push(tokenAddr1);
+		let tokenSym1 = pair.tokenAmounts[0].token.symbol
+		if (allTokens.indexOf(tokenAddr1) === -1)
+			allTokens.push({'address': tokenAddr1, 'symbol': tokenSym1});
 
 	}
 	return allTokens;
