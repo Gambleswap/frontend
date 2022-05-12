@@ -470,7 +470,7 @@ export const claimGMBFromLP = async (fromAddress, pairAddress) => {
 	const transactionParameters = {
 		to: pairAddress, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
-		data: pair.methods.claimGMB().encodeABI(),
+		data: pair.methods.claimGMB(fromAddress).encodeABI(),
 	};
 
 	await signTrx(transactionParameters);
