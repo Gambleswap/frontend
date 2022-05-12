@@ -182,6 +182,7 @@ class Swap extends React.Component {
             this.setWallet(address);
             this.setTokenListAddr(await getTokenList());
             this.fillTokenListInput();
+            await this.fetchBalances()
         } catch (e) {
             console.log(e);
         }
