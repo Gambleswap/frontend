@@ -26,6 +26,7 @@ class LiquidityProviding extends React.Component {
                 amount: "",
                 balance: "",
                 authorised: false,
+                pair: undefined,
                 approve: {
                     active: false,
                     token: "",
@@ -129,6 +130,13 @@ class LiquidityProviding extends React.Component {
         })
     }
 
+    setRemovePair(_new) {
+        this.setState(state => {
+            state.remove.pair = _new;
+            return state
+        })
+    }
+
     setRemoveToken0(_new) {
         this.setState(state => {
             state.remove.token0 = _new;
@@ -190,6 +198,7 @@ class LiquidityProviding extends React.Component {
             try {
                 const pair = await getPair(this.state.remove.token0, this.state.remove.token1);
                 if (pair !== undefined) {
+                    this.setRemovePair(pair);
                     const allowance = await getApproval(pair.liquidityToken.address, this.state.walletAddress, GambleswapRouterAddress);
                     amount = (await loadTokenAccountBalance(this.state.walletAddress, pair.liquidityToken.address)) / 10 ** 18;
                     this.setRemoveBalance(amount);
@@ -448,7 +457,7 @@ class LiquidityProviding extends React.Component {
     };
 
     handleClaimGMB = async (e) => {
-        await claimGMBFromLP();
+        await claimGMBFromLP(this.state.walletAddress, this.state.remove.pair.liquidityToken.address);
     };
 
     removeLiquidity() {
@@ -496,7 +505,7 @@ class LiquidityProviding extends React.Component {
                                 {
                                     this.state.remove.authorised ?
                                     <div style={{display: "table-cell"}}>
-                                        <button className="btn" onClick={this.handleClaimGMB}>Claim GMB</button>
+                                        <div className="btn" onClick={this.handleClaimGMB}>Claim GMB</div>
                                     </div> : <></>
                                 }
                                 <div style={{display: "table-cell", width: "50%"}}>
