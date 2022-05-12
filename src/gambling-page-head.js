@@ -161,7 +161,7 @@ class Header extends React.Component {
 						<button className="sc-95d8b156-0 iEdSHP sc-a97aa614-0 jMtDSu" scale="sm"
 								id="open-settings-dialog-button">
 							<Link to="/lp">
-								<img src="https://cdn4.iconfinder.com/data/icons/banking-44/64/Home-Loan-Income-Growth-512.png" width={50}/>
+								<img src="https://img.icons8.com/external-flaticons-lineal-color-flat-icons/64/000000/external-liquidity-accounting-flaticons-lineal-color-flat-icons.png" width={45}/>
 							</Link>
 						</button>
 					</div>
