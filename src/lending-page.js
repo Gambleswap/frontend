@@ -1,4 +1,4 @@
-import {GambleswapLPLendingAddress, getApproval, getCurrentWalletConnected, GMBContractAddress, loadRoundNum, toEther, tokenApproval, toWei} from "./util/interact.js";
+import {GambleswapLPLendingAddress, getApproval, getCurrentWalletConnected, GMBContractAddress, loadRoundNum, loadTokenAccountBalance, toEther, tokenApproval, toWei} from "./util/interact.js";
 
 import React from "react";
 import {enterPool, exitPool, getLendingPools} from "./util/interact";
@@ -14,7 +14,8 @@ class Lending extends React.Component {
 			pools: [],
 			roundNum: "",
             amounts: {},
-			approvedLP: []
+			approvedLP: [],
+			lpTokens: [],
 		};
 	}
 
@@ -22,6 +23,14 @@ class Lending extends React.Component {
 		this.setState(state => {
 			let {approvedLP, ...remaining} = state;
 			remaining.approvedLP = _new;
+			return remaining;
+		})
+	};
+
+	setLPTokens = (_new) => {
+		this.setState(state => {
+			let {lpTokens, ...remaining} = state;
+			remaining.lpTokens = _new;
 			return remaining;
 		})
 	};
@@ -80,12 +89,14 @@ class Lending extends React.Component {
 			this.setRoundNum(roundNum);	
 
 			let approvedLP = []
+			let lpTokens = []
 			for(let i = 0; i < this.state.pools.length; i++) {
 				let pairAddr = this.state.pools[i].liquidityPair.liquidityToken.address
 				approvedLP.push(await getApproval(pairAddr, this.state.walletAddress, GambleswapLPLendingAddress))
+				lpTokens.push(toEther(await loadTokenAccountBalance(this.state.walletAddress, pairAddr)))
 			}	
-			console.log(approvedLP)
 			this.setApprovedLP(approvedLP)	
+			this.setLPTokens(lpTokens)
 		} catch (e) {
 			console.log(e)
 		}
@@ -168,7 +179,7 @@ class Lending extends React.Component {
 										<div height="72px" className="sc-c4ec0fdf-0 sc-b3fe3fbc-0 epLSSF gZEYEG">
 											<div color="text" className="sc-be365e-0 QveLg" style={{width: "max-content"}}>
 												{
-													`${pool.liquidityPair.tokenAmounts[0].token.symbol} <> ${pool.liquidityPair.tokenAmounts[1].token.symbol}`
+													`${pool.liquidityPair.tokenAmounts[0].token.symbol} <> ${pool.liquidityPair.tokenAmounts[1].token.symbol} - Balance: ${this.state.lpTokens[pool.index-1]} $LP`
 												}
 											</div>
 										</div>
@@ -253,7 +264,7 @@ class Lending extends React.Component {
                                                                    style={{"margin-bottom": "10px"}}
                                                             />
 															{
-																this.state.approvedLP[pool.index-1] >= 0 ?
+																this.state.approvedLP[pool.index-1] > 0 ?
 																<button className="btn" type="button" pool-index={pool.index}
 																	onClick={this.handleEnter}>Enter Pool</button> :
 																<button className="btn" type="button" pool-index={pool.index} onClick={this.handleLPApproval}>Approve LP</button>
