@@ -25,7 +25,6 @@ class Swap extends React.Component {
             slippage: "0.5",
             fromTokenAllowance: "",
             toTokenAllowance: "",
-            tokenListAddr: [],
         };
     }
 
@@ -101,14 +100,6 @@ class Swap extends React.Component {
         })
     }
 
-    setTokenListAddr(_new) {
-        this.setState(state => {
-            let {tokenListAddr, ...remaining} = state;
-            remaining.tokenListAddr = _new;
-            return remaining;
-        })
-    }
-
     setToTokenAllowance(_new) {
         this.setState(state => {
             let {toTokenAllowance, ...remaining} = state;
@@ -180,9 +171,12 @@ class Swap extends React.Component {
         try {
             const {address, status} = await getCurrentWalletConnected();
             this.setWallet(address);
-            this.setTokenListAddr(await getTokenList());
-            this.fillTokenListInput();
-        } catch (e) {
+            let tokenLists = [{"address": "0xaE9dbC7Cee6d34BEEa9b9c4DFF17D9c6516696c3", "symbol": "DNI"},
+                            {"address": "0x952DE112CdA4d3f664CdBC5e358C5916DD261BCb", "symbol": "RAD"},
+                        {"address": "ROSE", "symbol": "ROSE"}]
+            this.addDataList("tokenlist1", tokenLists);
+            this.addDataList("tokenlist2", tokenLists);
+            } catch (e) {
             console.log(e);
         }
     };
@@ -192,7 +186,7 @@ class Swap extends React.Component {
         this.addWalletListener();
         await this.connectWalletPressed();
         await this.fetchData();
-		await setInterval(() => this.fetchData(), 3000);
+		await setInterval(() => this.fetchBalances(), 3000);
     };
 
 
@@ -288,25 +282,32 @@ class Swap extends React.Component {
         this.setType(type);
     };
 
-    fillTokenListInput() {
-        if (document.getElementById("tokenlist1").children.length === this.state.tokenListAddr.length)
-            return
-		let childs1 = []
-		for (let i = 0; i < this.state.tokenListAddr.length; i++) {
-			let option = document.createElement('option');
-			option.value = this.state.tokenListAddr[i];
-			childs1.push(option);	 
-		}
-		document.getElementById("tokenlist1").replaceChildren(...childs1);
-
+    addDataList(id, tokenListAddr) {
         let childs2 = []
-		for (let i = 0; i < this.state.tokenListAddr.length; i++) {
+		for (let i = 0; i < tokenListAddr.length; i++) {
 			let option = document.createElement('option');
-			option.value = this.state.tokenListAddr[i];
+			option.value = tokenListAddr[i].address;
+			option.innerText = tokenListAddr[i].symbol;
 			childs2.push(option);	 
 		}
-		document.getElementById("tokenlist2").replaceChildren(...childs2);
-	}
+		document.getElementById(id).replaceChildren(...childs2);
+    }
+
+    // fillTokenListInput = async () => {
+    //     let tokenListAddr = await getTokenList();
+    //     let listLen = document.getElementById("tokenlist1").children.length
+    //     //Add ROSE if === 0
+    //     console.log("token", tokenListAddr.length)
+    //     console.log("list", document.getElementById("tokenlist1").children.length)
+    //     if (listLen !== 0) {
+    //         if (tokenListAddr.length === 0)
+    //             return
+    //         else if (listLen > 1 && listLen >= tokenListAddr.length + 1)
+    //             return
+    //     }
+    //     this.addDataList("tokenlist1", tokenListAddr)
+    //     this.addDataList("tokenlist2", tokenListAddr)
+    //     }
 
     render() {
         return (
