@@ -1,10 +1,11 @@
 import {
     connectWallet,
     GambleswapRouterAddress,
-    getApprovedToken,
+    getApproval,
     getTokenList,
     tokenApproval,
     uniswapRoute,
+    tokenLists,
 } from "./util/interact.js";
 import {TradeType} from "@gambleswap/sdk";
 import React from "react";
@@ -136,18 +137,19 @@ class Swap extends React.Component {
         try {
             var amount0, amount1;
             if (this.state.fromToken !== "") {
-                this.setFromTokenAllowance(await getApprovedToken(this.state.walletAddress, this.state.fromToken, GambleswapRouterAddress))
+                this.setFromTokenAllowance(await getApproval(this.state.fromToken, this.state.walletAddress, GambleswapRouterAddress));
                 try {
                     amount0 = (await loadTokenAccountBalance(this.state.walletAddress, this.state.fromToken)) / 10 ** 18;
-                } catch {
-                    amount0 = ""
+                } catch (e){
+                    amount0 = "";
+                    console.log(e)
                 }
             }
             else
                 amount0 = "";
     
             if (this.state.toToken !== "") {
-                this.setToTokenAllowance(await getApprovedToken(this.state.walletAddress, this.state.toToken, GambleswapRouterAddress))
+                this.setToTokenAllowance(await getApproval(this.state.toToken, this.state.walletAddress, GambleswapRouterAddress));
                 try {
                     amount1 = (await loadTokenAccountBalance(this.state.walletAddress, this.state.toToken)) / 10 ** 18;
                 } catch {
@@ -163,7 +165,7 @@ class Swap extends React.Component {
                 }
             )    
         } catch (e) {
-
+            console.log(e)
         }
     };
 
@@ -171,11 +173,10 @@ class Swap extends React.Component {
         try {
             const {address, status} = await getCurrentWalletConnected();
             this.setWallet(address);
-            let tokenLists = [{"address": "0xaE9dbC7Cee6d34BEEa9b9c4DFF17D9c6516696c3", "symbol": "DNI"},
-                            {"address": "0x952DE112CdA4d3f664CdBC5e358C5916DD261BCb", "symbol": "RAD"},
-                        {"address": "ROSE", "symbol": "ROSE"}]
+
             this.addDataList("tokenlist1", tokenLists);
             this.addDataList("tokenlist2", tokenLists);
+            await this.fetchBalances();
             } catch (e) {
             console.log(e);
         }
@@ -256,6 +257,12 @@ class Swap extends React.Component {
                 amount = parseFloat(_amount)*10**18;
             else
                 amount = parseInt(_amount)*10**18
+
+
+            type === TradeType.EXACT_INPUT ?
+                this.setAmount({from: _amount, to: this.state.amount.to}) :
+                this.setAmount({from: this.state.amount.from, to: _amount});
+
         } catch (e) {
             type === TradeType.EXACT_INPUT ?
                 this.setAmount({from: amount, to: ""}) :

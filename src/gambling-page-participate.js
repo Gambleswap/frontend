@@ -2,7 +2,7 @@ import {
 	connectWallet,
 	GambleswapLPLendingAddress,
 	GamblingContractAddress,
-	getApprovedToken,
+	getApproval,
 	getAuthorizedPairs,
 	gmbApproval,
 	GMBContractAddress,
@@ -186,7 +186,7 @@ class Gambling extends React.Component {
 			}
 			
 			if (this.state.pairAddr && this.state.pairAddr !== "") {
-				this.setApprovedLP(await getApprovedToken(this.state.walletAddress, this.state.pairAddr, GamblingContractAddress))
+				this.setApprovedLP(await getApproval(this.state.pairAddr, this.state.walletAddress, GamblingContractAddress))
 			}
 
 			this.setCurrentRoundState(await getCurrentRound(this.state.walletAddress, roundNum));
@@ -362,7 +362,7 @@ class Gambling extends React.Component {
 															<div>
 															{
 																this.state.borrow === true && this.state.currentRoundState.approvedGMBtoLending <= 0 ?
-																<button className="btn" type="button" value="Approve GMB" onClick={this.handleGMBtoLendingApproval}>Approve Lending GMB</button> :
+																<button className="btn" type="button" value="Approve GMB" onClick={this.handleGMBtoLendingApproval}>Approve GMB For Lending</button> :
 																<input className="btn" value="Participate" type="submit"/>
 															}
 															</div>

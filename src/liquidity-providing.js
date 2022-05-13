@@ -11,7 +11,8 @@ import {
     loadLPTokenAccountBalance, loadTokenAccountBalance,
     removeLiquidity,
     toEther,
-    toWei, validateAddress
+    toWei, validateAddress,
+    tokenLists
 } from "./util/interact";
 // import {BigInt} from "big-integer"
 
@@ -212,7 +213,6 @@ class LiquidityProviding extends React.Component {
                         }
                     }
                     this.setRemoveAuthorised(isAuthorised);
-
                     if (this.state.remove.amount !== "") {
                         if (allowance < toWei(this.state.remove.amount.toLocaleString('fullwide', {useGrouping: false}))) {
                             this.setRemoveApprove({
@@ -292,9 +292,7 @@ class LiquidityProviding extends React.Component {
         try {
             const {address, status} = await getCurrentWalletConnected();
             this.setWallet(address);
-            let tokenLists = [{"address": "0xaE9dbC7Cee6d34BEEa9b9c4DFF17D9c6516696c3", "symbol": "DNI"},
-                            {"address": "0x952DE112CdA4d3f664CdBC5e358C5916DD261BCb", "symbol": "RAD"},
-                        {"address": "ROSE", "symbol": "ROSE"}]
+
             this.addDataList("tokenlist0", tokenLists);
             this.addDataList("tokenlist1", tokenLists);
             this.addDataList("remove-tokenlist0", tokenLists);
@@ -357,6 +355,12 @@ class LiquidityProviding extends React.Component {
     };
 
     handleAddAmountChange = async (type, _amount) => {
+
+        if (TradeType.EXACT_INPUT === type)
+            this.setAddToken0Amount(_amount);
+        else
+            this.setAddToken1Amount(_amount)
+
         if (!validateAddress(this.state.add.token0.address) || !validateAddress(this.state.add.token1.address)) {
             this.setAddToken0Amount("");
             this.setAddToken1Amount("");
@@ -407,11 +411,6 @@ class LiquidityProviding extends React.Component {
                     this.setAddToken0Amount(toEther(amountA.toFixed(0)))
                 }
             }
-        } else {
-            if (TradeType.EXACT_INPUT === type)
-                this.setAddToken0Amount(_amount);
-            else
-                this.setAddToken1Amount(_amount)
         }
     };
 

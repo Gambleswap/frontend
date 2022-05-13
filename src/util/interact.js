@@ -14,6 +14,8 @@ const web3 = new Web3(new Web3.providers.HttpProvider(url));
 
 const GambleswapPairABI = require("../abis/GambleswapPair-abi.json");
 
+export const WETHAddress = "0x792296e2a15e6Ceb5f5039DecaE7A1f25b00B0B0";
+
 const GMBContractABI = require("../abis/GMBToken-abi.json");
 export const GMBContractAddress = "0x53b7D8952c6b32bE3cF0676045172b3596114869"; //"0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
@@ -29,6 +31,15 @@ export const GambleswapLPLendingAddress = "0x47893140C79ab5D5B6E8603bcD9610d7b39
 const ERC20ABI = require("../abis/ERC20-abi.json");
 
 const chainId = 42261; //31337;
+
+
+export const tokenLists = [
+	{"address": "0xaE9dbC7Cee6d34BEEa9b9c4DFF17D9c6516696c3", "symbol": "DNI"},
+	{"address": "0x952DE112CdA4d3f664CdBC5e358C5916DD261BCb", "symbol": "RAD"},
+	{"address": "0x53b7D8952c6b32bE3cF0676045172b3596114869", "symbol": "GMB"},
+	{"address": "ROSE", "symbol": "ROSE"}
+	]
+
 
 export const getLendingPools = async (address) => {
 	const len = await Fetcher.fetchPoolsLength(chainId, provider);
@@ -50,6 +61,8 @@ export const getLendingPools = async (address) => {
 };
 
 export const validateAddress = (address) => {
+	if (address === "ROSE")
+		return true
 	try {
 		ethers.utils.getAddress(address);
 		return true
@@ -59,6 +72,12 @@ export const validateAddress = (address) => {
 };
 
 export const getAmount = async (token0, token1, type, value, slippage) => {
+	if (token0 === "ROSE") {
+		token0 = WETHAddress
+	}
+	if (token1 === "ROSE") {
+		token1 = WETHAddress
+	}
 	var BN = web3.utils.BN;
 	const slippageTolerance = new Percent(`${slippage*100}`, "10000"); // 50 bips, or 0.50%
 	const RAD = await Fetcher.fetchTokenData(chainId, token0, provider);
@@ -74,6 +93,12 @@ export const getAmount = async (token0, token1, type, value, slippage) => {
 };
 
 export const getPair = async (token0, token1) => {
+	if (token0 === "ROSE") {
+		token0 = WETHAddress
+	}
+	if (token1 === "ROSE") {
+		token1 = WETHAddress
+	}
 	try {
 		const RAD = await Fetcher.fetchTokenData(chainId, token0, provider);
 		const DNI = await Fetcher.fetchTokenData(chainId, token1, provider);
@@ -115,6 +140,27 @@ export const getTokenList = async () => {
 };
 
 export const addLiquidity = async (token0, token1, amount0, amount1, amount0min, amount1min, fromAddress) => {
+	let isETH = false;
+	if (token0 === "ROSE") {
+		token0 = WETHAddress;
+		isETH = true
+	}
+	if (token1 === "ROSE") {
+		token1 = WETHAddress;
+		let temp = token0;
+		token0 = token1;
+		token1 = temp;
+
+		temp = amount0;
+		amount0 = amount1;
+		amount1 = temp;
+
+		temp = amount0min;
+		amount0min = amount1min;
+		amount1min = temp;
+
+		isETH = true
+	}
 	const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
 	//input error handling
 	if (!window.ethereum || fromAddress === null) {
@@ -123,25 +169,38 @@ export const addLiquidity = async (token0, token1, amount0, amount1, amount0min,
 				"💡 Connect your Metamask wallet to update the message on the blockchain.",
 		};
 	}
+	let transactionParameters;
 
-	console.log("finaly");
-	console.log(token0);
-	console.log(token1);
-	console.log(amount0);
-	console.log(amount1);
-	console.log(amount0min);
-	console.log(amount1min);
-
-	const transactionParameters = {
-		to: GambleswapRouterAddress, // Required except during contract publications.
-		from: fromAddress, // must match user's active address.
-		data: GambleswapRouterContract.methods.addLiquidity(`${token0}`, `${token1}`, amount0, amount1, amount0min, amount1min, fromAddress, deadline).encodeABI(),
-	};
-
+	if (isETH) {
+		transactionParameters = {
+			to: GambleswapRouterAddress, // Required except during contract publications.
+			from: fromAddress, // must match user's active address.
+			value: ethers.BigNumber.from(amount0).toHexString() ,
+			data: GambleswapRouterContract.methods.addLiquidityETH(`${token1}`, amount1, amount1min, amount0min, fromAddress, deadline).encodeABI(),
+		};
+	}
+	else {
+		transactionParameters = {
+			to: GambleswapRouterAddress, // Required except during contract publications.
+			from: fromAddress, // must match user's active address.
+			data: GambleswapRouterContract.methods.addLiquidity(`${token0}`, `${token1}`, amount0, amount1, amount0min, amount1min, fromAddress, deadline).encodeABI(),
+		};
+	}
+	console.log(transactionParameters);
 	await signTrx(transactionParameters)
-}
+};
 
 export const uniswapRoute = async (fromAddress, token0, token1, to, amount, type, slippage) => {
+	let WETH0 = false;
+	let WETH1 = false;
+	if (token0 === "ROSE") {
+		token0 = WETHAddress;
+		WETH0 = true
+	}
+	if (token1 === "ROSE") {
+		token1 = WETHAddress;
+		WETH1 = true
+	}
 
 	// note that you may want/need to handle this async code differently,
 	// for example if top-level await is not an option
@@ -189,10 +248,23 @@ export const uniswapRoute = async (fromAddress, token0, token1, to, amount, type
 
 	const amountOutMin = trade[0].minimumAmountOut(slippageTolerance).raw; // needs to be converted to e.g. hex
 	const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
-	type === TradeType.EXACT_INPUT ?
-	await swapExactTokensForTokens(fromAddress, amount, amountOutMin, path, to, deadline) : swapTokensForExactTokens(fromAddress, amount, amountOutMin, path, to, deadline)
+	if (type === TradeType.EXACT_INPUT) {
+		if (WETH0)
+			await swapExactETHForTokens(fromAddress, amount, amountOutMin, path, to, deadline);
+		else if (WETH1)
+			await swapExactTokensForETH(fromAddress, amount, amountOutMin, path, to, deadline);
+		else
+			await swapExactTokensForTokens(fromAddress, amount, amountOutMin, path, to, deadline)
+	} else {
+		if (WETH1)
+			await swapTokensForExactETH(fromAddress, amount, amountOutMin, path, to, deadline);
+		else if (WETH0)
+			await swapETHForExactTokens(fromAddress, amount, amountOutMin, path, to, deadline);
+		else
+			await swapTokensForExactTokens(fromAddress, amount, amountOutMin, path, to, deadline)
+	}
 
-	// const value = trade.inputAmount.raw; // // needs to be converted to e.g. hex
+	// const value = trade.inputAmount.raw; // // needs to be converted to e.g.  hex
 
 	// console.log(pair.token0Price)
 	// const route = new Route([pair], token0);
@@ -221,6 +293,63 @@ export const GambleswapLPLendingContract = new web3.eth.Contract(
 	GambleswapLPLendingAddress
 );
 
+export const swapETHForExactTokens = async (fromAddress, amount, amountOutMin, path, to, deadline) => {
+	//input error handling
+	if (!window.ethereum || fromAddress === null) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	const transactionParameters = {
+		to: GambleswapRouterAddress, // Required except during contract publications.
+		from: fromAddress, // must match user's active address.
+		value: ethers.BigNumber.from(amount).toHexString(),
+		data: GambleswapRouterContract.methods.swapETHForExactTokens(`${amountOutMin}`, path, to, deadline).encodeABI(),
+	};
+
+	await signTrx(transactionParameters)
+};
+
+export const swapExactETHForTokens = async (fromAddress, amount, amountOutMin, path, to, deadline) => {
+	//input error handling
+	if (!window.ethereum || fromAddress === null) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+
+	const transactionParameters = {
+		to: GambleswapRouterAddress, // Required except during contract publications.
+		from: fromAddress, // must match user's active address.
+		value: ethers.BigNumber.from(`${amount}`).toHexString(),
+		data: GambleswapRouterContract.methods.swapExactETHForTokens(`${amountOutMin}`, path, to, deadline).encodeABI(),
+	};
+
+	await signTrx(transactionParameters)
+};
+
+export const swapExactTokensForETH = async (fromAddress, amount, amountOutMin, path, to, deadline) => {
+	//input error handling
+	if (!window.ethereum || fromAddress === null) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	const transactionParameters = {
+		to: GambleswapRouterAddress, // Required except during contract publications.
+		from: fromAddress, // must match user's active address.
+		data: GambleswapRouterContract.methods.swapExactTokensForETH(`${amount}`, `${amountOutMin}`, path, to, deadline).encodeABI(),
+	};
+
+	await signTrx(transactionParameters)
+};
+
 export const swapExactTokensForTokens = async (fromAddress, amount, amountOutMin, path, to, deadline) => {
 	//input error handling
 	if (!window.ethereum || fromAddress === null) {
@@ -234,6 +363,24 @@ export const swapExactTokensForTokens = async (fromAddress, amount, amountOutMin
 		to: GambleswapRouterAddress, // Required except during contract publications.
 		from: fromAddress, // must match user's active address.
 		data: GambleswapRouterContract.methods.swapExactTokensForTokens(`${amount}`, `${amountOutMin}`, path, to, deadline).encodeABI(),
+	};
+
+	await signTrx(transactionParameters)
+};
+
+export const swapTokensForExactETH = async (fromAddress, amount, amountOutMin, path, to, deadline) => {
+	//input error handling
+	if (!window.ethereum || fromAddress === null) {
+		return {
+			status:
+				"💡 Connect your Metamask wallet to update the message on the blockchain.",
+		};
+	}
+
+	const transactionParameters = {
+		to: GambleswapRouterAddress, // Required except during contract publications.
+		from: fromAddress, // must match user's active address.
+		data: GambleswapRouterContract.methods.swapTokensForExactETH(`${amount}`, `${amountOutMin}`, path, to, deadline).encodeABI(),
 	};
 
 	await signTrx(transactionParameters)
@@ -266,6 +413,10 @@ export const loadRoundNum = async () => {
 };
 
 export const loadLPTokenAccountBalance = async (account, token0, token1) => {
+	if (token0 === "ROSE")
+		token0 = WETHAddress;
+	if (token1 === "ROSE")
+		token1 = WETHAddress;
 	const RAD = await Fetcher.fetchTokenData(chainId, token0, provider);
 	const DNI = await Fetcher.fetchTokenData(chainId, token1, provider);
 	const pair = await Fetcher.fetchPairData(RAD, DNI, provider);
@@ -277,6 +428,19 @@ export const loadLPTokenAccountBalance = async (account, token0, token1) => {
 };
 
 export const removeLiquidity = async (account, token0, token1, liquidity) => {
+	let isETH = false;
+	if (token0 === "ROSE") {
+		token0 = WETHAddress;
+		isETH = true
+	}
+	if (token1 === "ROSE") {
+		token1 = WETHAddress;
+		let temp = token0;
+		token0 = token1;
+		token1 = temp;
+
+		isETH = true
+	}
 	//input error handling
 	if (!window.ethereum || account === null) {
 		return {
@@ -289,17 +453,31 @@ export const removeLiquidity = async (account, token0, token1, liquidity) => {
 
 	// tomorrow date
 	let tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1);
+	let transactionParameters;
 
-	const transactionParameters = {
-		to: GambleswapRouterAddress, // Required except during contract publications.
-		from: account, // must match user's active address.
-		data: GambleswapRouterContract.methods.removeLiquidity(`${token0}`, `${token1}`, `${liquidity}`, 0, 0, account, `${tomorrow.valueOf()/1000}`).encodeABI(),
-	};
+	if (isETH) {
+		transactionParameters = {
+			to: GambleswapRouterAddress, // Required except during contract publications.
+			from: account, // must match user's active address.
+			data: GambleswapRouterContract.methods.removeLiquidityETH(`${token0}`, `${liquidity}`, 0, 0, account, `${tomorrow.valueOf()/1000}`).encodeABI(),
+		};
+
+	}
+	else {
+		transactionParameters = {
+			to: GambleswapRouterAddress, // Required except during contract publications.
+			from: account, // must match user's active address.
+			data: GambleswapRouterContract.methods.removeLiquidity(`${token0}`, `${token1}`, `${liquidity}`, 0, 0, account, `${tomorrow.valueOf() / 1000}`).encodeABI(),
+		};
+	}
 
 	await signTrx(transactionParameters)
 };
 
 export const loadTokenAccountBalance = async (account, contractAddress) => {
+	if (contractAddress === "ROSE") {
+		return await web3.eth.getBalance(account)
+	}
 	const contract = new web3.eth.Contract(
 		GMBContractABI,
 		contractAddress
@@ -571,6 +749,8 @@ export const getApprovedToken = async (fromAddress, tokenAddr, toAddr) => {
 };
 
 export const getApproval = async (token, owner, address) => {
+	if (token === "ROSE")
+		return 999999999999999999999999999999
 	const contract = new web3.eth.Contract(
 		ERC20ABI,
 		token
